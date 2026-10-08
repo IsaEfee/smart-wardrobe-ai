@@ -209,8 +209,12 @@ def get_live_weather(city, lang):
             if weather_main in ["Rain", "Drizzle", "Thunderstorm"]: precip_ml = "Rain"
             elif weather_main == "Snow": precip_ml = "Snow"
             else: precip_ml = "Clear"
+            
+            timezone_offset = data.get("timezone", 0)
+            city_time = datetime.datetime.utcnow() + datetime.timedelta(seconds=timezone_offset)
+            city_hour = city_time.hour
                 
-            return True, (temp, feels_like, precip_ml, wind, desc)
+            return True, (temp, feels_like, precip_ml, wind, desc, city_hour)
         else:
             return False, f"API Error: {response.json().get('message', 'Error')}"
     except Exception as e:
@@ -292,17 +296,17 @@ if selected_list == t[lang]["city_other"]:
 else:
     city = selected_list
 
-current_hour = datetime.datetime.now().hour
-if 5 <= current_hour < 12: auto_time = "Morning"
-elif 12 <= current_hour < 18: auto_time = "Afternoon"
-else: auto_time = "Evening"
-
-temp_c, feels_like_c, precip_ml, wind_kmh, time_ml = 15.0, 15.0, "Clear", 5.0, auto_time 
+temp_c, feels_like_c, precip_ml, wind_kmh, time_ml = 15.0, 15.0, "Clear", 5.0, "Afternoon"
 
 if city:
     success, result = get_live_weather(city, lang)
     if success:
-        temp_c, feels_like_c, precip_ml, wind_kmh, desc = result
+        temp_c, feels_like_c, precip_ml, wind_kmh, desc, city_hour = result
+        
+        if 5 <= city_hour < 12: time_ml = "Morning"
+        elif 12 <= city_hour < 18: time_ml = "Afternoon"
+        else: time_ml = "Evening"
+        
         st.success(t[lang]["live_success"])
         m1, m2, m3, m4 = st.columns(4)
         
