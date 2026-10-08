@@ -346,6 +346,12 @@ if st.button(t[lang]["btn_suggest"], type="primary"):
                 if ml_gen not in ic["gender"] or ml_gen not in dis["gender"]: continue
                 if precip_ml in ["Rain", "Snow"] and not has_umbrella and not (ic["hoodie"] or dis["hoodie"]): continue 
                 
+                # YENİ KURAL: 19 derecenin altında sadece kısa kollu ile dışarı çıkılmaz!
+                is_short_sleeve = ic["en"] in ["Short Sleeve T-Shirt", "Tank Top / Crop Top", "Undershirt", "Elegant Blouse"]
+                is_no_outer = dis["en"] == "None (Innerwear Only)"
+                if temp_c < 19 and is_short_sleeve and is_no_outer:
+                    continue
+                
                 if abs((ic["clo"] + dis["clo"]) - target_top) <= 0.15:
                     suitable_tops.append({"ic_name": ic[lang], "dis_name": dis[lang], "basic": ic["basic"] and dis["basic"]})
                     
