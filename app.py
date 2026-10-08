@@ -297,27 +297,45 @@ def generate_outfit(feels_like_c, precip_ml, wind_kmh, time_ml, owned_tops, owne
         basics = [x for x in valid_outfits if x[0]["basic"] and x[1]["basic"]]
         non_basics = [x for x in valid_outfits if not (x[0]["basic"] and x[1]["basic"])]
         
-        # Seçenek 1: Hedef ısıya EN YAKIN ilk 3 temel kombinden birini seç (Öncelik şortta olur)
+        # Seçenek 1: Hedef ısıya EN YAKIN ilk 3 temel kombinden birini seç
         if basics:
             bt1, bb1 = random.choice(basics[:3])
         else:
             bt1, bb1 = random.choice(valid_outfits[:3])
             
-        # Seçenek 2: Kalan temel parçalar arasından rastgele alternatif
+        def get_diverse(pool, avoid_tops, avoid_bots):
+            # 1. Hem üst hem alt farklı olsun
+            p1 = [x for x in pool if x[0]["ic"] not in avoid_tops and x[1]["ic"] not in avoid_bots]
+            if p1: return random.choice(p1[:4])
+            # 2. Sadece alt farklı olsun (Bacaklar farklı görünsün)
+            p2 = [x for x in pool if x[1]["ic"] not in avoid_bots]
+            if p2: return random.choice(p2[:3])
+            # 3. Sadece üst farklı olsun
+            p3 = [x for x in pool if x[0]["ic"] not in avoid_tops]
+            if p3: return random.choice(p3[:3])
+            # 4. Hiçbiri yoksa rastgele
+            return random.choice(pool[:3]) if pool else None
+            
+        # Seçenek 2: Çeşitlilik Filtresi ile Temel Parça
         remaining_basics = [x for x in basics if x != (bt1, bb1)]
-        if remaining_basics:
-            bt2, bb2 = random.choice(remaining_basics)
+        res2 = get_diverse(remaining_basics, [bt1["ic"]], [bb1["ic"]])
+        if res2:
+            bt2, bb2 = res2
         else:
             remaining_all = [x for x in valid_outfits if x != (bt1, bb1)]
-            bt2, bb2 = random.choice(remaining_all) if remaining_all else (bt1, bb1)
+            res2_all = get_diverse(remaining_all, [bt1["ic"]], [bb1["ic"]])
+            bt2, bb2 = res2_all if res2_all else (bt1, bb1)
             
+        # Seçenek 3: Çeşitlilik Filtresi ile İddialı (Non-Basic) Parça
         remaining_for_unique = [x for x in valid_outfits if x not in [(bt1, bb1), (bt2, bb2)]]
-        if non_basics and any(x in remaining_for_unique for x in non_basics):
-            at, ab = random.choice([x for x in remaining_for_unique if x in non_basics])
-        elif remaining_for_unique:
-            at, ab = random.choice(remaining_for_unique)
+        non_basics_rem = [x for x in remaining_for_unique if x in non_basics]
+        
+        res3 = get_diverse(non_basics_rem, [bt1["ic"], bt2["ic"]], [bb1["ic"], bb2["ic"]])
+        if res3:
+            at, ab = res3
         else:
-            at, ab = bt1, bb1
+            res3_all = get_diverse(remaining_for_unique, [bt1["ic"], bt2["ic"]], [bb1["ic"], bb2["ic"]])
+            at, ab = res3_all if res3_all else (bt1, bb1)
             
         return True, (tt, tb, bt1, bb1, bt2, bb2, at, ab, accs, used_undershirt)
     
