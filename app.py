@@ -213,8 +213,9 @@ def get_live_weather(city, lang):
             timezone_offset = data.get("timezone", 0)
             city_time = datetime.datetime.utcnow() + datetime.timedelta(seconds=timezone_offset)
             city_hour = city_time.hour
+            city_time_str = city_time.strftime("%H:%M")
                 
-            return True, (temp, feels_like, precip_ml, wind, desc, city_hour)
+            return True, (temp, feels_like, precip_ml, wind, desc, city_hour, city_time_str)
         else:
             return False, f"API Error: {response.json().get('message', 'Error')}"
     except Exception as e:
@@ -297,11 +298,12 @@ else:
     city = selected_list
 
 temp_c, feels_like_c, precip_ml, wind_kmh, time_ml = 15.0, 15.0, "Clear", 5.0, "Afternoon"
+city_time_str = "--:--"
 
 if city:
     success, result = get_live_weather(city, lang)
     if success:
-        temp_c, feels_like_c, precip_ml, wind_kmh, desc, city_hour = result
+        temp_c, feels_like_c, precip_ml, wind_kmh, desc, city_hour, city_time_str = result
         
         if 5 <= city_hour < 12: time_ml = "Morning"
         elif 12 <= city_hour < 18: time_ml = "Afternoon"
@@ -317,7 +319,7 @@ if city:
         if lang == "tr":
             time_ui = "Sabah" if time_ml == "Morning" else ("Öğlen" if time_ml == "Afternoon" else "Akşam/Gece")
         
-        m2.metric(t[lang]["cond"], f"{desc}", f"{time_ui}", delta_color="off")
+        m2.metric(t[lang]["cond"], f"{desc}", f"{city_time_str} - {time_ui}", delta_color="off")
         
         ui_precip = t[lang]["rain"] if precip_ml == "Rain" else (t[lang]["snow"] if precip_ml == "Snow" else t[lang]["clear"])
         m3.metric(t[lang]["precip"], f"{ui_precip}")
