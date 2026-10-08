@@ -362,8 +362,8 @@ if st.button(t[lang]["btn_suggest"], type="primary"):
         for u in [x * 0.1 for x in range(2, 20)]: 
             for a in [x * 0.1 for x in range(1, 10)]: 
                 if a > u + 0.1: continue
-                # Yaz modası kuralları artık hissedilen sıcaklığa (feels_like_c) göre
-                if feels_like_c > 12 and (u - a) > 0.2: continue
+                # Yaz modası kuralı esnetildi: Sadece 20 derece üstünde çok kalın üst giyim yasak!
+                if feels_like_c >= 20 and (u - a) > 0.3: continue
                 
                 # YENİ 8 PARAMETRELİ TAHMİN FONKSİYONU (Faz-2)
                 if model.predict([[gen_enc, prof_enc, feels_like_c, precip_enc, wind_kmh, time_enc, u, a]])[0] == comfortable_enc:
@@ -373,8 +373,12 @@ if st.button(t[lang]["btn_suggest"], type="primary"):
             target_top = sum([h[0] for h in valid_targets]) / len(valid_targets)
             target_bottom = sum([h[1] for h in valid_targets]) / len(valid_targets)
         else:
-            target_top = 2.0 if feels_like_c < 5 else 0.2
-            target_bottom = 1.0 if feels_like_c < 5 else 0.1
+            # Akıllı Geri Dönüş (Smart Fallback)
+            base = max(0.2, (22 - feels_like_c) * 0.10)
+            if time_ml == "Evening": base += 0.15
+            elif time_ml == "Afternoon" and precip_ml == "Clear": base -= 0.10
+            target_top = round(base * 0.65, 1)
+            target_bottom = round(base * 0.35, 1)
             
         st.info(t[lang]["ai_target"].format(u=target_top, a=target_bottom))
 
