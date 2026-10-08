@@ -1,1 +1,0 @@
-# smart-wardrobe-ai
