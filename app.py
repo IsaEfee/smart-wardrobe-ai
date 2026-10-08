@@ -386,8 +386,13 @@ with tab1:
                         st.success(t[lang]["success_outfit"])
                         c1, c2 = st.columns(2)
                         
-                        c1.markdown(t[lang]["opt1"]); c1.write(t[lang]["top"], render_top(bt['ic'], bt['dis'], used_under)); c1.write(t[lang]["bottom"], render_bot(bb['ic'], bb['dis']))
-                        c2.markdown(t[lang]["opt2"]); c2.write(t[lang]["top"], render_top(at['ic'], at['dis'], used_under)); c2.write(t[lang]["bottom"], render_bot(ab['ic'], ab['dis']))
+                        c1.markdown(t[lang]["opt1"])
+                        c1.markdown(f"{t[lang]['top']} {render_top(bt['ic'], bt['dis'], used_under)}")
+                        c1.markdown(f"{t[lang]['bottom']} {render_bot(bb['ic'], bb['dis'])}")
+                        
+                        c2.markdown(t[lang]["opt2"])
+                        c2.markdown(f"{t[lang]['top']} {render_top(at['ic'], at['dis'], used_under)}")
+                        c2.markdown(f"{t[lang]['bottom']} {render_bot(ab['ic'], ab['dis'])}")
                         if accs:
                             st.markdown("---")
                             st.markdown(f"{t[lang]['extra']} {', '.join(accs)}")
