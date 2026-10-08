@@ -186,13 +186,13 @@ else:
 # ==========================================
 
 @st.cache_resource
-def load_model():
+def load_model_v2():
     file_path = os.path.join(os.path.dirname(__file__), "wardrobe_model.pkl")
     if not os.path.exists(file_path): return None, None
     data = joblib.load(file_path)
     return data['model'], data['encoders']
 
-model, encoders = load_model()
+model, encoders = load_model_v2()
 
 def get_live_weather(city, lang):
     url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY}&units=metric&lang={lang}"
