@@ -365,6 +365,10 @@ if st.button(t[lang]["btn_suggest"], type="primary"):
                 # Yaz modası kuralı esnetildi: Sadece 20 derece üstünde çok kalın üst giyim yasak!
                 if feels_like_c >= 20 and (u - a) > 0.3: continue
                 
+                # YENİ: Hava 20 dereceden soğuksa, Sıcakkanlı olunsa bile çok ince hedefler (0.2 / 0.1) yasak!
+                if feels_like_c < 20 and u < 0.3: continue
+                if feels_like_c < 20 and a < 0.2: continue
+                
                 # YENİ 8 PARAMETRELİ TAHMİN FONKSİYONU (Faz-2)
                 if model.predict([[gen_enc, prof_enc, feels_like_c, precip_enc, wind_kmh, time_enc, u, a]])[0] == comfortable_enc:
                     valid_targets.append((u, a))
@@ -389,10 +393,15 @@ if st.button(t[lang]["btn_suggest"], type="primary"):
                 if ml_gen not in ic["gender"] or ml_gen not in dis["gender"]: continue
                 if precip_ml in ["Rain", "Snow"] and not has_umbrella and not (ic["hoodie"] or dis["hoodie"]): continue 
                 
+                is_no_outer = dis["en"] == "None (Innerwear Only)"
+                
                 # KURAL: 19 derecenin altında sadece kısa kollu ile dışarı çıkılmaz!
                 is_short_sleeve = ic["en"] in ["Short Sleeve T-Shirt", "Tank Top / Crop Top", "Undershirt", "Elegant Blouse"]
-                is_no_outer = dis["en"] == "None (Innerwear Only)"
                 if feels_like_c < 19 and is_short_sleeve and is_no_outer:
+                    continue
+                
+                # YENİ RÜZGAR KURALI: 22 derece altı ve Rüzgar > 15 km/s ise dış giyim zorunludur! (Rüzgarı kessin diye)
+                if feels_like_c < 22 and wind_kmh > 15 and is_no_outer:
                     continue
                 
                 if abs((ic["clo"] + dis["clo"]) - target_top) <= 0.15:
