@@ -240,7 +240,7 @@ def generate_outfit(feels_like_c, precip_ml, wind_kmh, time_ml, owned_tops, owne
             
             if not is_style_compatible(ic["style"], dis["style"]): continue
             
-            if abs((ic["clo"] + dis["clo"]) - tt_search) <= 0.15:
+            if abs((ic["clo"] + dis["clo"]) - tt_search) <= 0.20:
                 if "Universal" in ic["style"]: top_style = dis["style"]
                 elif "Universal" in dis["style"]: top_style = ic["style"]
                 else: top_style = list(set(ic["style"]).intersection(set(dis["style"])))
@@ -258,7 +258,7 @@ def generate_outfit(feels_like_c, precip_ml, wind_kmh, time_ml, owned_tops, owne
             
             if not is_style_compatible(ic["style"], dis["style"]): continue
             
-            if abs((ic["clo"] + dis["clo"]) - tb) <= 0.15:
+            if abs((ic["clo"] + dis["clo"]) - tb) <= 0.25:
                 if "Universal" in ic["style"]: bot_style = dis["style"]
                 elif "Universal" in dis["style"]: bot_style = ic["style"]
                 else: bot_style = list(set(ic["style"]).intersection(set(dis["style"])))
@@ -285,17 +285,25 @@ def generate_outfit(feels_like_c, precip_ml, wind_kmh, time_ml, owned_tops, owne
     for top in s_tops:
         for bot in s_bots:
             if is_style_compatible(top["style"], bot["style"]):
-                valid_outfits.append((top, bot))
+                # Kombinin hedefe olan uzaklığını hesapla (Daha küçük = Daha iyi uyum)
+                diff = abs(top["clo"] - tt_search) + abs(bot["clo"] - tb)
+                valid_outfits.append((top, bot, diff))
 
     if valid_outfits:
+        # En mükemmel ısı uyumuna göre sırala
+        valid_outfits.sort(key=lambda x: x[2])
+        valid_outfits = [(x[0], x[1]) for x in valid_outfits]
+        
         basics = [x for x in valid_outfits if x[0]["basic"] and x[1]["basic"]]
         non_basics = [x for x in valid_outfits if not (x[0]["basic"] and x[1]["basic"])]
         
+        # Seçenek 1: Hedef ısıya EN YAKIN ilk 3 temel kombinden birini seç (Öncelik şortta olur)
         if basics:
-            bt1, bb1 = random.choice(basics)
+            bt1, bb1 = random.choice(basics[:3])
         else:
-            bt1, bb1 = random.choice(valid_outfits)
+            bt1, bb1 = random.choice(valid_outfits[:3])
             
+        # Seçenek 2: Kalan temel parçalar arasından rastgele alternatif
         remaining_basics = [x for x in basics if x != (bt1, bb1)]
         if remaining_basics:
             bt2, bb2 = random.choice(remaining_basics)
