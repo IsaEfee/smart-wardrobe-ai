@@ -245,7 +245,7 @@ def generate_outfit(feels_like_c, precip_ml, wind_kmh, time_ml, owned_tops, owne
                 elif "Universal" in dis["style"]: top_style = ic["style"]
                 else: top_style = list(set(ic["style"]).intersection(set(dis["style"])))
                 
-                s_tops.append({"ic": ic_str, "dis": dis_str, "basic": ic["basic"] and dis["basic"], "style": top_style})
+                s_tops.append({"ic": ic_str, "dis": dis_str, "basic": ic["basic"] and dis["basic"], "style": top_style, "clo": ic["clo"] + dis["clo"]})
                 
     for ic in kiyafet_db["bottom_inner"]:
         for dis in kiyafet_db["bottom_outer"]:
@@ -263,7 +263,7 @@ def generate_outfit(feels_like_c, precip_ml, wind_kmh, time_ml, owned_tops, owne
                 elif "Universal" in dis["style"]: bot_style = ic["style"]
                 else: bot_style = list(set(ic["style"]).intersection(set(dis["style"])))
                 
-                s_bots.append({"ic": ic_str, "dis": dis_str, "basic": ic["basic"] and dis["basic"], "style": bot_style})
+                s_bots.append({"ic": ic_str, "dis": dis_str, "basic": ic["basic"] and dis["basic"], "style": bot_style, "clo": ic["clo"] + dis["clo"]})
                 
     def get_acc(en_name):
         return next(fmt(x, lang) for x in kiyafet_db["accessories"] if x["en"] == en_name)
