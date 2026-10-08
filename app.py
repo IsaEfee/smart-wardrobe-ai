@@ -5,6 +5,7 @@ import random
 import os
 import requests
 import datetime
+import json
 
 st.set_page_config(page_title="Smart Wardrobe Assistant", page_icon="🧥", layout="wide", initial_sidebar_state="expanded")
 
@@ -25,6 +26,7 @@ t = {
         "gender_lbl": "Gender", "prof_lbl": "Thermal",
         "btn_edit": "Edit Profile",
         "umbrella": "I have an umbrella ☂️",
+        "undershirt_lbl": "I wear an undershirt 🎽",
         "wardrobe_title": "🚪 My Wardrobe",
         "wardrobe_desc": "*Select the items you own:*",
         "wt1": "👕 Inner Tops", "wt2": "🧥 Outerwear", "wt3": "👖 Bottoms", "wt4": "🧦 Hosiery / Thermals", "wt5": "🧣 Accessories",
@@ -48,7 +50,8 @@ t = {
         "rain": "Rain", "snow": "Snow", "clear": "Clear",
         "tab1": "⏳ Right Now", "tab2": "📅 5-Day Planner",
         "plan_time_lbl": "Select time for daily forecast:",
-        "btn_plan": "Generate 5-Day Plan 🗓️"
+        "btn_plan": "Generate 5-Day Plan 🗓️",
+        "atlet_str": "Undershirt"
     },
     "tr": {
         "welcome": "👋 Akıllı Kıyafet Asistanına Hoş Geldiniz!",
@@ -64,6 +67,7 @@ t = {
         "gender_lbl": "Cinsiyet", "prof_lbl": "Isı Profili",
         "btn_edit": "Profili Düzenle",
         "umbrella": "Yanımda Şemsiyem Var ☂️",
+        "undershirt_lbl": "İçlik / Atlet Giyerim 🎽",
         "wardrobe_title": "🚪 Dolabımı Düzenle",
         "wardrobe_desc": "*Sahip olduğunuz kıyafetleri ekleyin:*",
         "wt1": "👕 Üst İç Giyim", "wt2": "🧥 Dış Giyim", "wt3": "👖 Alt Giyim", "wt4": "🧦 İçlik ve Çorap", "wt5": "🧣 Aksesuarlar",
@@ -87,71 +91,21 @@ t = {
         "rain": "Yağmur", "snow": "Kar", "clear": "Yok",
         "tab1": "⏳ Şu An", "tab2": "📅 5 Günlük Planlayıcı",
         "plan_time_lbl": "Tahminlerin Hangi Saat İçin Yapılmasını İstersin?",
-        "btn_plan": "5 Günlük Plan Oluştur 🗓️"
+        "btn_plan": "5 Günlük Plan Oluştur 🗓️",
+        "atlet_str": "İçlik Atlet"
     }
 }
 
-kiyafet_db = {
-    "top_inner": [
-        {"en": "Tank Top / Crop Top", "tr": "Askılı Bluz / Crop Top", "clo": 0.10, "gender": ["Female"], "basic": True, "hoodie": False},
-        {"en": "Undershirt", "tr": "Atlet", "clo": 0.10, "gender": ["Female", "Male"], "basic": True, "hoodie": False},
-        {"en": "Short Sleeve T-Shirt", "tr": "Kısa Kollu Tişört", "clo": 0.15, "gender": ["Female", "Male"], "basic": True, "hoodie": False},
-        {"en": "Polo T-Shirt", "tr": "Polo Yaka Tişört", "clo": 0.17, "gender": ["Female", "Male"], "basic": False, "hoodie": False},
-        {"en": "Elegant Blouse", "tr": "Şık Bluz", "clo": 0.20, "gender": ["Female"], "basic": False, "hoodie": False},
-        {"en": "Shirt", "tr": "Gömlek", "clo": 0.20, "gender": ["Female", "Male"], "basic": True, "hoodie": False},
-        {"en": "Long Sleeve T-Shirt", "tr": "Uzun Kollu Tişört", "clo": 0.25, "gender": ["Female", "Male"], "basic": True, "hoodie": False},
-        {"en": "Flannel / Thick Shirt", "tr": "Oduncu Gömleği", "clo": 0.30, "gender": ["Female", "Male"], "basic": False, "hoodie": False},
-        {"en": "Thin Knit Sweater", "tr": "İnce Triko Kazak", "clo": 0.35, "gender": ["Female", "Male"], "basic": True, "hoodie": False},
-        {"en": "Hoodie", "tr": "Kapşonlu Sweatshirt", "clo": 0.40, "gender": ["Female", "Male"], "basic": True, "hoodie": True},
-        {"en": "Quarter-Zip Fleece", "tr": "Yarım Fermuarlı Polar", "clo": 0.45, "gender": ["Female", "Male"], "basic": False, "hoodie": False},
-        {"en": "Turtleneck Sweater", "tr": "Boğazlı Kazak", "clo": 0.50, "gender": ["Female", "Male"], "basic": True, "hoodie": False},
-        {"en": "Thick Wool Sweater", "tr": "Kalın Yün Kazak", "clo": 0.60, "gender": ["Female", "Male"], "basic": False, "hoodie": False}
-    ],
-    "top_outer": [
-        {"en": "None (Innerwear Only)", "tr": "Yok (Sadece İç Giyim)", "clo": 0.0, "gender": ["Female", "Male"], "basic": True, "hoodie": False},
-        {"en": "Hooded Raincoat", "tr": "Kapüşonlu Yağmurluk", "clo": 0.20, "gender": ["Female", "Male"], "basic": True, "hoodie": True},
-        {"en": "Thin Windbreaker", "tr": "İnce Rüzgarlık", "clo": 0.25, "gender": ["Female", "Male"], "basic": True, "hoodie": True},
-        {"en": "Puffer Vest", "tr": "Şişme Yelek", "clo": 0.25, "gender": ["Female", "Male"], "basic": False, "hoodie": False},
-        {"en": "Cardigan", "tr": "Hırka", "clo": 0.30, "gender": ["Female", "Male"], "basic": True, "hoodie": False},
-        {"en": "Blazer", "tr": "Blazer Ceket", "clo": 0.35, "gender": ["Female", "Male"], "basic": False, "hoodie": False},
-        {"en": "Denim Jacket", "tr": "Kot Ceket", "clo": 0.35, "gender": ["Female", "Male"], "basic": True, "hoodie": False},
-        {"en": "Trench Coat", "tr": "Trençkot", "clo": 0.40, "gender": ["Female", "Male"], "basic": False, "hoodie": False},
-        {"en": "Leather Jacket", "tr": "Deri Ceket", "clo": 0.45, "gender": ["Female", "Male"], "basic": False, "hoodie": False},
-        {"en": "Winter Puffer Jacket", "tr": "Kışlık Şişme Mont", "clo": 0.80, "gender": ["Female", "Male"], "basic": True, "hoodie": True},
-        {"en": "Faux Fur Coat", "tr": "Peluş Kaban", "clo": 0.90, "gender": ["Female"], "basic": False, "hoodie": False},
-        {"en": "Thick Wool Coat", "tr": "Kalın Yün Kaban", "clo": 1.00, "gender": ["Female", "Male"], "basic": False, "hoodie": False},
-        {"en": "Heavy Overcoat", "tr": "Ağır Kışlık Palto", "clo": 1.20, "gender": ["Female", "Male"], "basic": False, "hoodie": False}
-    ],
-    "bottom_inner": [
-        {"en": "None (Underwear Only)", "tr": "Yok (Sadece İç Çamaşırı)", "clo": 0.0, "gender": ["Female", "Male"], "basic": True},
-        {"en": "Fishnet/Patterned Tights", "tr": "File/Desenli Külotlu Çorap", "clo": 0.05, "gender": ["Female"], "basic": False},
-        {"en": "Thin Tights", "tr": "İnce Külotlu Çorap", "clo": 0.10, "gender": ["Female"], "basic": True},
-        {"en": "Thick Thermal Tights", "tr": "Kalın Termal Çorap", "clo": 0.25, "gender": ["Female"], "basic": False},
-        {"en": "Thermal Underwear", "tr": "Termal İçlik", "clo": 0.30, "gender": ["Female", "Male"], "basic": False}
-    ],
-    "bottom_outer": [
-        {"en": "Mini Skirt", "tr": "Kısa Etek (Mini)", "clo": 0.10, "gender": ["Female"], "basic": False},
-        {"en": "Pleated Skirt", "tr": "Pileli Etek", "clo": 0.15, "gender": ["Female"], "basic": False},
-        {"en": "Shorts", "tr": "Şort", "clo": 0.15, "gender": ["Female", "Male"], "basic": True},
-        {"en": "Tights (Sport/Thin)", "tr": "Tayt (Spor / İnce)", "clo": 0.15, "gender": ["Female"], "basic": True},
-        {"en": "Linen Pants", "tr": "Keten Pantolon", "clo": 0.20, "gender": ["Female", "Male"], "basic": True},
-        {"en": "Thin Fabric Pants", "tr": "İnce Kumaş Pantolon", "clo": 0.20, "gender": ["Female", "Male"], "basic": False},
-        {"en": "Maxi (Long) Skirt", "tr": "Maksi (Uzun) Etek", "clo": 0.25, "gender": ["Female"], "basic": False},
-        {"en": "Chino Pants", "tr": "Chino / Kumaş Pantolon", "clo": 0.25, "gender": ["Female", "Male"], "basic": True},
-        {"en": "Jeans", "tr": "Kot Pantolon", "clo": 0.30, "gender": ["Female", "Male"], "basic": True},
-        {"en": "Cargo Pants", "tr": "Kargo Pantolon", "clo": 0.30, "gender": ["Female", "Male"], "basic": False},
-        {"en": "Sweatpants", "tr": "Eşofman Altı", "clo": 0.35, "gender": ["Female", "Male"], "basic": True},
-        {"en": "Fleece-Lined Winter Tights", "tr": "İçi Polarlı Kışlık Tayt", "clo": 0.35, "gender": ["Female"], "basic": True},
-        {"en": "Fleece Joggers", "tr": "Kışlık Kalın Eşofman", "clo": 0.45, "gender": ["Female", "Male"], "basic": True},
-        {"en": "Thick Corduroy Pants", "tr": "Kalın Kadife Pantolon", "clo": 0.50, "gender": ["Female", "Male"], "basic": False}
-    ],
-    "accessories": [
-        {"en": "Sunglasses", "tr": "Güneş Gözlüğü", "gender": ["Female", "Male"], "basic": True},
-        {"en": "Beanie (Hat)", "tr": "Bere", "gender": ["Female", "Male"], "basic": True},
-        {"en": "Scarf", "tr": "Atkı", "gender": ["Female", "Male"], "basic": True},
-        {"en": "Leather/Winter Gloves", "tr": "Kışlık Eldiven", "gender": ["Female", "Male"], "basic": True}
-    ]
-}
+@st.cache_data
+def load_db():
+    with open(os.path.join(os.path.dirname(__file__), "wardrobe_db.json"), "r", encoding="utf-8") as f:
+        return json.load(f)
+
+kiyafet_db = load_db()
+
+def is_style_compatible(styles1, styles2):
+    if "Universal" in styles1 or "Universal" in styles2: return True
+    return len(set(styles1).intersection(set(styles2))) > 0
 
 if 'lang' not in st.session_state: st.session_state['lang'] = "en"
 if 'onboarding_complete' not in st.session_state: st.session_state['onboarding_complete'] = False
@@ -236,7 +190,7 @@ def get_5_day_forecast(city, target_time_str, lang):
         return False, "API Error"
     except Exception as e: return False, str(e)
 
-def generate_outfit(feels_like_c, precip_ml, wind_kmh, time_ml, owned_tops, owned_bottoms, owned_accs, has_umbrella):
+def generate_outfit(feels_like_c, precip_ml, wind_kmh, time_ml, owned_tops, owned_bottoms, owned_accs, has_umbrella, has_undershirt):
     gen_enc = encoders['gender'].transform([st.session_state['ml_gender']])[0]
     prof_enc = encoders['profile'].transform([st.session_state['ml_profile']])[0]
     precip_enc = encoders['precip'].transform([precip_ml])[0]
@@ -262,17 +216,34 @@ def generate_outfit(feels_like_c, precip_ml, wind_kmh, time_ml, owned_tops, owne
         elif time_ml == "Afternoon" and precip_ml == "Clear": base -= 0.10
         tt, tb = round(base*0.65, 1), round(base*0.35, 1)
         
+    # --- SMART ADD-ON: UNDERSHIRT ---
+    used_undershirt = False
+    if has_undershirt and tt >= 0.25: # Sıcak havalarda (0.15 CLO hedefinde) atlet çıkarılır
+        tt_search = tt - 0.10
+        used_undershirt = True
+    else:
+        tt_search = tt
+
     s_tops, s_bots = [], []
     for ic in kiyafet_db["top_inner"]:
         for dis in kiyafet_db["top_outer"]:
             if ic[lang] not in owned_tops or dis[lang] not in owned_tops: continue
             if st.session_state['ml_gender'] not in ic["gender"] or st.session_state['ml_gender'] not in dis["gender"]: continue
             if precip_ml in ["Rain", "Snow"] and not has_umbrella and not (ic["hoodie"] or dis["hoodie"]): continue 
+            
             is_no = dis["en"] == "None (Innerwear Only)"
-            if feels_like_c < 19 and ic["en"] in ["Short Sleeve T-Shirt", "Tank Top / Crop Top", "Undershirt", "Elegant Blouse", "Polo T-Shirt"] and is_no: continue
+            
+            if feels_like_c < 19 and ic["en"] in ["Short Sleeve T-Shirt", "Sleeveless T-Shirt", "Tank Top / Crop Top", "Elegant Blouse", "Polo T-Shirt"] and is_no: continue
             if feels_like_c < 22 and wind_kmh > 15 and is_no: continue
-            if abs((ic["clo"] + dis["clo"]) - tt) <= 0.15:
-                s_tops.append({"ic": ic[lang], "dis": dis[lang], "basic": ic["basic"] and dis["basic"]})
+            
+            if not is_style_compatible(ic["style"], dis["style"]): continue
+            
+            if abs((ic["clo"] + dis["clo"]) - tt_search) <= 0.15:
+                if "Universal" in ic["style"]: top_style = dis["style"]
+                elif "Universal" in dis["style"]: top_style = ic["style"]
+                else: top_style = list(set(ic["style"]).intersection(set(dis["style"])))
+                
+                s_tops.append({"ic": ic[lang], "dis": dis[lang], "basic": ic["basic"] and dis["basic"], "style": top_style})
                 
     for ic in kiyafet_db["bottom_inner"]:
         for dis in kiyafet_db["bottom_outer"]:
@@ -281,31 +252,53 @@ def generate_outfit(feels_like_c, precip_ml, wind_kmh, time_ml, owned_tops, owne
             if precip_ml in ["Rain", "Snow"] and "Shorts" in dis["en"]: continue
             if feels_like_c < 20 and "Shorts" in dis["en"]: continue
             if dis["en"] == "Shorts" and ic["en"] != "None (Underwear Only)": continue
+            
+            if not is_style_compatible(ic["style"], dis["style"]): continue
+            
             if abs((ic["clo"] + dis["clo"]) - tb) <= 0.15:
-                s_bots.append({"ic": ic[lang], "dis": dis[lang], "basic": ic["basic"] and dis["basic"]})
+                if "Universal" in ic["style"]: bot_style = dis["style"]
+                elif "Universal" in dis["style"]: bot_style = ic["style"]
+                else: bot_style = list(set(ic["style"]).intersection(set(dis["style"])))
                 
-    # Aksesuar Kural Motoru (Smart Add-ons)
+                s_bots.append({"ic": ic[lang], "dis": dis[lang], "basic": ic["basic"] and dis["basic"], "style": bot_style})
+                
     accs = []
     if precip_ml == "Clear" and time_ml in ["Morning", "Afternoon"] and feels_like_c > 15:
         sun_lbl = "Sunglasses" if lang == "en" else "Güneş Gözlüğü"
         if sun_lbl in owned_accs: accs.append(sun_lbl)
-        
     if feels_like_c < 10:
         hat_lbl = "Beanie (Hat)" if lang == "en" else "Bere"
         scarf_lbl = "Scarf" if lang == "en" else "Atkı"
         if hat_lbl in owned_accs: accs.append(hat_lbl)
         if scarf_lbl in owned_accs: accs.append(scarf_lbl)
-        
     if feels_like_c < 5:
         glove_lbl = "Leather/Winter Gloves" if lang == "en" else "Kışlık Eldiven"
         if glove_lbl in owned_accs: accs.append(glove_lbl)
 
+    valid_outfits = []
+    for top in s_tops:
+        for bot in s_bots:
+            if is_style_compatible(top["style"], bot["style"]):
+                valid_outfits.append((top, bot))
+
+    if valid_outfits:
+        basics = [x for x in valid_outfits if x[0]["basic"] and x[1]["basic"]]
+        if basics:
+            bt, bb = basics[0]
+            at, ab = random.choice([x for x in valid_outfits if x != (bt, bb)] or [(bt, bb)])
+        else:
+            bt, bb = valid_outfits[0]
+            at, ab = random.choice([x for x in valid_outfits if x != (bt, bb)] or [(bt, bb)])
+            
+        return True, (tt, tb, bt, bb, at, ab, accs, used_undershirt)
+    
     if s_tops and s_bots:
         bt = next((x for x in s_tops if x["basic"]), s_tops[0])
         bb = next((x for x in s_bots if x["basic"]), s_bots[0])
         at = random.choice([x for x in s_tops if x != bt] or [bt])
         ab = random.choice([x for x in s_bots if x != bb] or [bb])
-        return True, (tt, tb, bt, bb, at, ab, accs)
+        return True, (tt, tb, bt, bb, at, ab, accs, used_undershirt)
+        
     return False, None
 
 st.title(t[lang]["title"])
@@ -319,6 +312,7 @@ if st.sidebar.button(t[lang]["btn_edit"]): st.session_state['onboarding_complete
 
 st.sidebar.markdown("---")
 has_umbrella = st.sidebar.checkbox(t[lang]["umbrella"])
+has_undershirt = st.sidebar.checkbox(t[lang]["undershirt_lbl"])
 
 st.sidebar.header(t[lang]["wardrobe_title"])
 top_inners = [x[lang] for x in kiyafet_db["top_inner"]]
@@ -359,6 +353,15 @@ city = st.text_input(t[lang]["city_type"], "Seattle") if sel_city == t[lang]["ci
 
 tab1, tab2 = st.tabs([t[lang]["tab1"], t[lang]["tab2"]])
 
+def render_top(ic, dis, used_under):
+    base_str = f"🎽 {t[lang]['atlet_str']} + " if used_under else ""
+    if dis == t[lang]["none_top"]: return f"{base_str}{ic}"
+    return f"{base_str}{ic} + {dis}"
+
+def render_bot(ic, dis):
+    if ic == t[lang]["none_bottom"]: return dis
+    return f"{ic} + {dis}"
+
 with tab1:
     if city:
         succ, res = get_live_weather(city, lang)
@@ -376,15 +379,15 @@ with tab1:
             
             if st.button(t[lang]["btn_suggest"], type="primary", key="btn_now"):
                 with st.spinner(t[lang]["ai_calc"]):
-                    ok, out = generate_outfit(flc, p_ml, w_kmh, tml, owned_tops, owned_bots, owned_accs, has_umbrella)
+                    ok, out = generate_outfit(flc, p_ml, w_kmh, tml, owned_tops, owned_bots, owned_accs, has_umbrella, has_undershirt)
                     if ok:
-                        tt, tb, bt, bb, at, ab, accs = out
+                        tt, tb, bt, bb, at, ab, accs, used_under = out
                         st.info(t[lang]["ai_target"].format(u=tt, a=tb))
                         st.success(t[lang]["success_outfit"])
                         c1, c2 = st.columns(2)
-                        f_txt = lambda i,d: d if i==t[lang]["none_top"] or i==t[lang]["none_bottom"] else f"{d} + {i}"
-                        c1.markdown(t[lang]["opt1"]); c1.write(t[lang]["top"], f_txt(bt['ic'], bt['dis'])); c1.write(t[lang]["bottom"], f_txt(bb['ic'], bb['dis']))
-                        c2.markdown(t[lang]["opt2"]); c2.write(t[lang]["top"], f_txt(at['ic'], at['dis'])); c2.write(t[lang]["bottom"], f_txt(ab['ic'], ab['dis']))
+                        
+                        c1.markdown(t[lang]["opt1"]); c1.write(t[lang]["top"], render_top(bt['ic'], bt['dis'], used_under)); c1.write(t[lang]["bottom"], render_bot(bb['ic'], bb['dis']))
+                        c2.markdown(t[lang]["opt2"]); c2.write(t[lang]["top"], render_top(at['ic'], at['dis'], used_under)); c2.write(t[lang]["bottom"], render_bot(ab['ic'], ab['dis']))
                         if accs:
                             st.markdown("---")
                             st.markdown(f"{t[lang]['extra']} {', '.join(accs)}")
@@ -408,13 +411,12 @@ with tab2:
                         st.caption(f"🕒 {day['time']} | {day['desc']}")
                         st.write(f"🌡️ {day['temp']:.1f}°C (His: {day['feels_like']:.1f}°C)")
                         
-                        ok2, out = generate_outfit(day['feels_like'], day['precip'], day['wind'], sel_t_ml, owned_tops, owned_bots, owned_accs, has_umbrella)
+                        ok2, out = generate_outfit(day['feels_like'], day['precip'], day['wind'], sel_t_ml, owned_tops, owned_bots, owned_accs, has_umbrella, has_undershirt)
                         st.markdown("---")
                         if ok2:
-                            tt, tb, bt, bb, at, ab, accs = out
-                            f_txt = lambda i,d: d if i==t[lang]["none_top"] or i==t[lang]["none_bottom"] else f"{d} + {i}"
-                            st.write("👕 " + f_txt(bt['ic'], bt['dis']))
-                            st.write("👖 " + f_txt(bb['ic'], bb['dis']))
+                            tt, tb, bt, bb, at, ab, accs, used_under = out
+                            st.write("👕 " + render_top(bt['ic'], bt['dis'], used_under))
+                            st.write("👖 " + render_bot(bb['ic'], bb['dis']))
                             if accs: st.write("🧣 *" + ", ".join(accs) + "*")
                         else:
                             st.write("⚠️ " + t[lang]["err_outfit"])

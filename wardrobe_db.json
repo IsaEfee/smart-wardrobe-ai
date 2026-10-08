@@ -1,0 +1,702 @@
+{
+    "top_inner": [
+        {
+            "en": "Tank Top / Crop Top",
+            "tr": "Askılı Bluz / Crop Top",
+            "clo": 0.1,
+            "gender": [
+                "Female"
+            ],
+            "basic": true,
+            "hoodie": false,
+            "style": [
+                "Sport",
+                "Casual"
+            ]
+        },
+        {
+            "en": "Sleeveless T-Shirt",
+            "tr": "Sıfır Kol Tişört",
+            "clo": 0.12,
+            "gender": [
+                "Female",
+                "Male"
+            ],
+            "basic": true,
+            "hoodie": false,
+            "style": [
+                "Sport",
+                "Casual"
+            ]
+        },
+        {
+            "en": "Short Sleeve T-Shirt",
+            "tr": "Kısa Kollu Tişört",
+            "clo": 0.15,
+            "gender": [
+                "Female",
+                "Male"
+            ],
+            "basic": true,
+            "hoodie": false,
+            "style": [
+                "Sport",
+                "Casual",
+                "Smart-Casual"
+            ]
+        },
+        {
+            "en": "Polo T-Shirt",
+            "tr": "Polo Yaka Tişört",
+            "clo": 0.17,
+            "gender": [
+                "Female",
+                "Male"
+            ],
+            "basic": false,
+            "hoodie": false,
+            "style": [
+                "Casual",
+                "Smart-Casual"
+            ]
+        },
+        {
+            "en": "Elegant Blouse",
+            "tr": "Şık Bluz",
+            "clo": 0.2,
+            "gender": [
+                "Female"
+            ],
+            "basic": false,
+            "hoodie": false,
+            "style": [
+                "Smart-Casual",
+                "Formal"
+            ]
+        },
+        {
+            "en": "Shirt",
+            "tr": "Gömlek",
+            "clo": 0.2,
+            "gender": [
+                "Female",
+                "Male"
+            ],
+            "basic": true,
+            "hoodie": false,
+            "style": [
+                "Casual",
+                "Smart-Casual",
+                "Formal"
+            ]
+        },
+        {
+            "en": "Long Sleeve T-Shirt",
+            "tr": "Uzun Kollu Tişört",
+            "clo": 0.25,
+            "gender": [
+                "Female",
+                "Male"
+            ],
+            "basic": true,
+            "hoodie": false,
+            "style": [
+                "Sport",
+                "Casual"
+            ]
+        },
+        {
+            "en": "Flannel / Thick Shirt",
+            "tr": "Oduncu Gömleği",
+            "clo": 0.3,
+            "gender": [
+                "Female",
+                "Male"
+            ],
+            "basic": false,
+            "hoodie": false,
+            "style": [
+                "Casual"
+            ]
+        },
+        {
+            "en": "Thin Knit Sweater",
+            "tr": "İnce Triko Kazak",
+            "clo": 0.35,
+            "gender": [
+                "Female",
+                "Male"
+            ],
+            "basic": true,
+            "hoodie": false,
+            "style": [
+                "Casual",
+                "Smart-Casual"
+            ]
+        },
+        {
+            "en": "Hoodie",
+            "tr": "Kapşonlu Sweatshirt",
+            "clo": 0.4,
+            "gender": [
+                "Female",
+                "Male"
+            ],
+            "basic": true,
+            "hoodie": true,
+            "style": [
+                "Sport",
+                "Casual"
+            ]
+        },
+        {
+            "en": "Quarter-Zip Fleece",
+            "tr": "Yarım Fermuarlı Polar",
+            "clo": 0.45,
+            "gender": [
+                "Female",
+                "Male"
+            ],
+            "basic": false,
+            "hoodie": false,
+            "style": [
+                "Sport",
+                "Casual"
+            ]
+        },
+        {
+            "en": "Turtleneck Sweater",
+            "tr": "Boğazlı Kazak",
+            "clo": 0.5,
+            "gender": [
+                "Female",
+                "Male"
+            ],
+            "basic": true,
+            "hoodie": false,
+            "style": [
+                "Casual",
+                "Smart-Casual",
+                "Formal"
+            ]
+        },
+        {
+            "en": "Thick Wool Sweater",
+            "tr": "Kalın Yün Kazak",
+            "clo": 0.6,
+            "gender": [
+                "Female",
+                "Male"
+            ],
+            "basic": false,
+            "hoodie": false,
+            "style": [
+                "Casual",
+                "Smart-Casual"
+            ]
+        }
+    ],
+    "top_outer": [
+        {
+            "en": "None (Innerwear Only)",
+            "tr": "Yok (Sadece İç Giyim)",
+            "clo": 0.0,
+            "gender": [
+                "Female",
+                "Male"
+            ],
+            "basic": true,
+            "hoodie": false,
+            "style": [
+                "Universal"
+            ]
+        },
+        {
+            "en": "Hooded Raincoat",
+            "tr": "Kapüşonlu Yağmurluk",
+            "clo": 0.2,
+            "gender": [
+                "Female",
+                "Male"
+            ],
+            "basic": true,
+            "hoodie": true,
+            "style": [
+                "Sport",
+                "Casual"
+            ]
+        },
+        {
+            "en": "Thin Windbreaker",
+            "tr": "İnce Rüzgarlık",
+            "clo": 0.25,
+            "gender": [
+                "Female",
+                "Male"
+            ],
+            "basic": true,
+            "hoodie": true,
+            "style": [
+                "Sport",
+                "Casual"
+            ]
+        },
+        {
+            "en": "Puffer Vest",
+            "tr": "Şişme Yelek",
+            "clo": 0.25,
+            "gender": [
+                "Female",
+                "Male"
+            ],
+            "basic": false,
+            "hoodie": false,
+            "style": [
+                "Sport",
+                "Casual"
+            ]
+        },
+        {
+            "en": "Cardigan",
+            "tr": "Hırka",
+            "clo": 0.3,
+            "gender": [
+                "Female",
+                "Male"
+            ],
+            "basic": true,
+            "hoodie": false,
+            "style": [
+                "Casual",
+                "Smart-Casual"
+            ]
+        },
+        {
+            "en": "Blazer",
+            "tr": "Blazer Ceket",
+            "clo": 0.35,
+            "gender": [
+                "Female",
+                "Male"
+            ],
+            "basic": false,
+            "hoodie": false,
+            "style": [
+                "Smart-Casual",
+                "Formal"
+            ]
+        },
+        {
+            "en": "Denim Jacket",
+            "tr": "Kot Ceket",
+            "clo": 0.35,
+            "gender": [
+                "Female",
+                "Male"
+            ],
+            "basic": true,
+            "hoodie": false,
+            "style": [
+                "Casual",
+                "Smart-Casual"
+            ]
+        },
+        {
+            "en": "Trench Coat",
+            "tr": "Trençkot",
+            "clo": 0.4,
+            "gender": [
+                "Female",
+                "Male"
+            ],
+            "basic": false,
+            "hoodie": false,
+            "style": [
+                "Smart-Casual",
+                "Formal"
+            ]
+        },
+        {
+            "en": "Leather Jacket",
+            "tr": "Deri Ceket",
+            "clo": 0.45,
+            "gender": [
+                "Female",
+                "Male"
+            ],
+            "basic": false,
+            "hoodie": false,
+            "style": [
+                "Casual",
+                "Smart-Casual"
+            ]
+        },
+        {
+            "en": "Winter Puffer Jacket",
+            "tr": "Kışlık Şişme Mont",
+            "clo": 0.8,
+            "gender": [
+                "Female",
+                "Male"
+            ],
+            "basic": true,
+            "hoodie": true,
+            "style": [
+                "Sport",
+                "Casual"
+            ]
+        },
+        {
+            "en": "Faux Fur Coat",
+            "tr": "Peluş Kaban",
+            "clo": 0.9,
+            "gender": [
+                "Female"
+            ],
+            "basic": false,
+            "hoodie": false,
+            "style": [
+                "Smart-Casual",
+                "Formal"
+            ]
+        },
+        {
+            "en": "Thick Wool Coat",
+            "tr": "Kalın Yün Kaban",
+            "clo": 1.0,
+            "gender": [
+                "Female",
+                "Male"
+            ],
+            "basic": false,
+            "hoodie": false,
+            "style": [
+                "Casual",
+                "Smart-Casual",
+                "Formal"
+            ]
+        },
+        {
+            "en": "Heavy Overcoat",
+            "tr": "Ağır Kışlık Palto",
+            "clo": 1.2,
+            "gender": [
+                "Female",
+                "Male"
+            ],
+            "basic": false,
+            "hoodie": false,
+            "style": [
+                "Smart-Casual",
+                "Formal"
+            ]
+        }
+    ],
+    "bottom_inner": [
+        {
+            "en": "None (Underwear Only)",
+            "tr": "Yok (Sadece İç Çamaşırı)",
+            "clo": 0.0,
+            "gender": [
+                "Female",
+                "Male"
+            ],
+            "basic": true,
+            "style": [
+                "Universal"
+            ]
+        },
+        {
+            "en": "Fishnet/Patterned Tights",
+            "tr": "File/Desenli Külotlu Çorap",
+            "clo": 0.05,
+            "gender": [
+                "Female"
+            ],
+            "basic": false,
+            "style": [
+                "Casual",
+                "Smart-Casual",
+                "Formal"
+            ]
+        },
+        {
+            "en": "Thin Tights",
+            "tr": "İnce Külotlu Çorap",
+            "clo": 0.1,
+            "gender": [
+                "Female"
+            ],
+            "basic": true,
+            "style": [
+                "Universal"
+            ]
+        },
+        {
+            "en": "Thick Thermal Tights",
+            "tr": "Kalın Termal Çorap",
+            "clo": 0.25,
+            "gender": [
+                "Female"
+            ],
+            "basic": false,
+            "style": [
+                "Universal"
+            ]
+        },
+        {
+            "en": "Thermal Underwear",
+            "tr": "Termal İçlik",
+            "clo": 0.3,
+            "gender": [
+                "Female",
+                "Male"
+            ],
+            "basic": false,
+            "style": [
+                "Universal"
+            ]
+        }
+    ],
+    "bottom_outer": [
+        {
+            "en": "Mini Skirt",
+            "tr": "Kısa Etek (Mini)",
+            "clo": 0.1,
+            "gender": [
+                "Female"
+            ],
+            "basic": false,
+            "style": [
+                "Casual",
+                "Smart-Casual"
+            ]
+        },
+        {
+            "en": "Pleated Skirt",
+            "tr": "Pileli Etek",
+            "clo": 0.15,
+            "gender": [
+                "Female"
+            ],
+            "basic": false,
+            "style": [
+                "Casual",
+                "Smart-Casual"
+            ]
+        },
+        {
+            "en": "Shorts",
+            "tr": "Şort",
+            "clo": 0.15,
+            "gender": [
+                "Female",
+                "Male"
+            ],
+            "basic": true,
+            "style": [
+                "Sport",
+                "Casual"
+            ]
+        },
+        {
+            "en": "Tights (Sport/Thin)",
+            "tr": "Tayt (Spor / İnce)",
+            "clo": 0.15,
+            "gender": [
+                "Female"
+            ],
+            "basic": true,
+            "style": [
+                "Sport",
+                "Casual"
+            ]
+        },
+        {
+            "en": "Linen Pants",
+            "tr": "Keten Pantolon",
+            "clo": 0.2,
+            "gender": [
+                "Female",
+                "Male"
+            ],
+            "basic": true,
+            "style": [
+                "Casual",
+                "Smart-Casual"
+            ]
+        },
+        {
+            "en": "Thin Fabric Pants",
+            "tr": "İnce Kumaş Pantolon",
+            "clo": 0.2,
+            "gender": [
+                "Female",
+                "Male"
+            ],
+            "basic": false,
+            "style": [
+                "Smart-Casual",
+                "Formal"
+            ]
+        },
+        {
+            "en": "Maxi (Long) Skirt",
+            "tr": "Maksi (Uzun) Etek",
+            "clo": 0.25,
+            "gender": [
+                "Female"
+            ],
+            "basic": false,
+            "style": [
+                "Casual",
+                "Smart-Casual"
+            ]
+        },
+        {
+            "en": "Chino Pants",
+            "tr": "Chino / Kumaş Pantolon",
+            "clo": 0.25,
+            "gender": [
+                "Female",
+                "Male"
+            ],
+            "basic": true,
+            "style": [
+                "Casual",
+                "Smart-Casual"
+            ]
+        },
+        {
+            "en": "Jeans",
+            "tr": "Kot Pantolon",
+            "clo": 0.3,
+            "gender": [
+                "Female",
+                "Male"
+            ],
+            "basic": true,
+            "style": [
+                "Casual",
+                "Smart-Casual"
+            ]
+        },
+        {
+            "en": "Cargo Pants",
+            "tr": "Kargo Pantolon",
+            "clo": 0.3,
+            "gender": [
+                "Female",
+                "Male"
+            ],
+            "basic": false,
+            "style": [
+                "Sport",
+                "Casual"
+            ]
+        },
+        {
+            "en": "Sweatpants",
+            "tr": "Eşofman Altı",
+            "clo": 0.35,
+            "gender": [
+                "Female",
+                "Male"
+            ],
+            "basic": true,
+            "style": [
+                "Sport"
+            ]
+        },
+        {
+            "en": "Fleece-Lined Winter Tights",
+            "tr": "İçi Polarlı Kışlık Tayt",
+            "clo": 0.35,
+            "gender": [
+                "Female"
+            ],
+            "basic": true,
+            "style": [
+                "Sport",
+                "Casual"
+            ]
+        },
+        {
+            "en": "Fleece Joggers",
+            "tr": "Kışlık Kalın Eşofman",
+            "clo": 0.45,
+            "gender": [
+                "Female",
+                "Male"
+            ],
+            "basic": true,
+            "style": [
+                "Sport"
+            ]
+        },
+        {
+            "en": "Thick Corduroy Pants",
+            "tr": "Kalın Kadife Pantolon",
+            "clo": 0.5,
+            "gender": [
+                "Female",
+                "Male"
+            ],
+            "basic": false,
+            "style": [
+                "Casual",
+                "Smart-Casual"
+            ]
+        }
+    ],
+    "accessories": [
+        {
+            "en": "Sunglasses",
+            "tr": "Güneş Gözlüğü",
+            "gender": [
+                "Female",
+                "Male"
+            ],
+            "basic": true,
+            "style": [
+                "Universal"
+            ]
+        },
+        {
+            "en": "Beanie (Hat)",
+            "tr": "Bere",
+            "gender": [
+                "Female",
+                "Male"
+            ],
+            "basic": true,
+            "style": [
+                "Universal"
+            ]
+        },
+        {
+            "en": "Scarf",
+            "tr": "Atkı",
+            "gender": [
+                "Female",
+                "Male"
+            ],
+            "basic": true,
+            "style": [
+                "Universal"
+            ]
+        },
+        {
+            "en": "Leather/Winter Gloves",
+            "tr": "Kışlık Eldiven",
+            "gender": [
+                "Female",
+                "Male"
+            ],
+            "basic": true,
+            "style": [
+                "Universal"
+            ]
+        }
+    ]
+}
