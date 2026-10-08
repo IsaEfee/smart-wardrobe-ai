@@ -43,7 +43,7 @@ t = {
         "ai_calc": "AI is calculating ideal insulation targets...",
         "ai_target": "🧠 **AI Target:** Top: **{u:.1f} CLO**, Bottom: **{a:.1f} CLO**",
         "success_outfit": "✅ **Custom Outfit Recommendations:**",
-        "opt1": "### 👕 Option 1", "opt2": "### 🧥 Option 2",
+        "opt1": "### 👕 Option 1 (Daily)", "opt2": "### 👕 Option 2 (Alt)", "opt3": "### ✨ Option 3 (Unique)",
         "top": "**Top:**", "bottom": "**Bottom:**", "extra": "**➕ Extras:**",
         "err_outfit": "⚠️ Couldn't find a perfect match in your wardrobe for these specific conditions!",
         "none_top": "None (Innerwear Only)", "none_bottom": "None (Underwear Only)",
@@ -84,7 +84,7 @@ t = {
         "ai_calc": "Yapay zeka hesaplıyor...",
         "ai_target": "🧠 **Hedef:** Üst: **{u:.1f} CLO**, Alt: **{a:.1f} CLO**",
         "success_outfit": "✅ **Kombin Önerileri:**",
-        "opt1": "### 👕 Seçenek 1", "opt2": "### 🧥 Seçenek 2",
+        "opt1": "### 👕 Seçenek 1 (Günlük)", "opt2": "### 👕 Seçenek 2 (Alternatif)", "opt3": "### ✨ Seçenek 3 (Farklı)",
         "top": "**Üst:**", "bottom": "**Alt:**", "extra": "**➕ Ekstra:**",
         "err_outfit": "⚠️ Dolabındaki kıyafetlerle tam uygun kombin bulunamadı!",
         "none_top": "Yok (Sadece İç Giyim)", "none_bottom": "Yok (Sadece İç Çamaşırı)",
@@ -102,6 +102,9 @@ def load_db():
         return json.load(f)
 
 kiyafet_db = load_db()
+
+def fmt(item, lang):
+    return f"{item['icon']} {item[lang]}" if "icon" in item else item[lang]
 
 def is_style_compatible(styles1, styles2):
     if "Universal" in styles1 or "Universal" in styles2: return True
@@ -216,9 +219,8 @@ def generate_outfit(feels_like_c, precip_ml, wind_kmh, time_ml, owned_tops, owne
         elif time_ml == "Afternoon" and precip_ml == "Clear": base -= 0.10
         tt, tb = round(base*0.65, 1), round(base*0.35, 1)
         
-    # --- SMART ADD-ON: UNDERSHIRT ---
     used_undershirt = False
-    if has_undershirt and tt >= 0.25: # Sıcak havalarda (0.15 CLO hedefinde) atlet çıkarılır
+    if has_undershirt and tt >= 0.25:
         tt_search = tt - 0.10
         used_undershirt = True
     else:
@@ -227,12 +229,12 @@ def generate_outfit(feels_like_c, precip_ml, wind_kmh, time_ml, owned_tops, owne
     s_tops, s_bots = [], []
     for ic in kiyafet_db["top_inner"]:
         for dis in kiyafet_db["top_outer"]:
-            if ic[lang] not in owned_tops or dis[lang] not in owned_tops: continue
+            ic_str, dis_str = fmt(ic, lang), fmt(dis, lang)
+            if ic_str not in owned_tops or dis_str not in owned_tops: continue
             if st.session_state['ml_gender'] not in ic["gender"] or st.session_state['ml_gender'] not in dis["gender"]: continue
             if precip_ml in ["Rain", "Snow"] and not has_umbrella and not (ic["hoodie"] or dis["hoodie"]): continue 
             
             is_no = dis["en"] == "None (Innerwear Only)"
-            
             if feels_like_c < 19 and ic["en"] in ["Short Sleeve T-Shirt", "Sleeveless T-Shirt", "Tank Top / Crop Top", "Elegant Blouse", "Polo T-Shirt"] and is_no: continue
             if feels_like_c < 22 and wind_kmh > 15 and is_no: continue
             
@@ -243,11 +245,12 @@ def generate_outfit(feels_like_c, precip_ml, wind_kmh, time_ml, owned_tops, owne
                 elif "Universal" in dis["style"]: top_style = ic["style"]
                 else: top_style = list(set(ic["style"]).intersection(set(dis["style"])))
                 
-                s_tops.append({"ic": ic[lang], "dis": dis[lang], "basic": ic["basic"] and dis["basic"], "style": top_style})
+                s_tops.append({"ic": ic_str, "dis": dis_str, "basic": ic["basic"] and dis["basic"], "style": top_style})
                 
     for ic in kiyafet_db["bottom_inner"]:
         for dis in kiyafet_db["bottom_outer"]:
-            if ic[lang] not in owned_bottoms or dis[lang] not in owned_bottoms: continue
+            ic_str, dis_str = fmt(ic, lang), fmt(dis, lang)
+            if ic_str not in owned_bottoms or dis_str not in owned_bottoms: continue
             if st.session_state['ml_gender'] not in ic["gender"] or st.session_state['ml_gender'] not in dis["gender"]: continue
             if precip_ml in ["Rain", "Snow"] and "Shorts" in dis["en"]: continue
             if feels_like_c < 20 and "Shorts" in dis["en"]: continue
@@ -260,19 +263,22 @@ def generate_outfit(feels_like_c, precip_ml, wind_kmh, time_ml, owned_tops, owne
                 elif "Universal" in dis["style"]: bot_style = ic["style"]
                 else: bot_style = list(set(ic["style"]).intersection(set(dis["style"])))
                 
-                s_bots.append({"ic": ic[lang], "dis": dis[lang], "basic": ic["basic"] and dis["basic"], "style": bot_style})
+                s_bots.append({"ic": ic_str, "dis": dis_str, "basic": ic["basic"] and dis["basic"], "style": bot_style})
+                
+    def get_acc(en_name):
+        return next(fmt(x, lang) for x in kiyafet_db["accessories"] if x["en"] == en_name)
                 
     accs = []
     if precip_ml == "Clear" and time_ml in ["Morning", "Afternoon"] and feels_like_c > 15:
-        sun_lbl = "Sunglasses" if lang == "en" else "Güneş Gözlüğü"
+        sun_lbl = get_acc("Sunglasses")
         if sun_lbl in owned_accs: accs.append(sun_lbl)
     if feels_like_c < 10:
-        hat_lbl = "Beanie (Hat)" if lang == "en" else "Bere"
-        scarf_lbl = "Scarf" if lang == "en" else "Atkı"
+        hat_lbl = get_acc("Beanie (Hat)")
+        scarf_lbl = get_acc("Scarf")
         if hat_lbl in owned_accs: accs.append(hat_lbl)
         if scarf_lbl in owned_accs: accs.append(scarf_lbl)
     if feels_like_c < 5:
-        glove_lbl = "Leather/Winter Gloves" if lang == "en" else "Kışlık Eldiven"
+        glove_lbl = get_acc("Leather/Winter Gloves")
         if glove_lbl in owned_accs: accs.append(glove_lbl)
 
     valid_outfits = []
@@ -283,21 +289,38 @@ def generate_outfit(feels_like_c, precip_ml, wind_kmh, time_ml, owned_tops, owne
 
     if valid_outfits:
         basics = [x for x in valid_outfits if x[0]["basic"] and x[1]["basic"]]
+        non_basics = [x for x in valid_outfits if not (x[0]["basic"] and x[1]["basic"])]
+        
         if basics:
-            bt, bb = basics[0]
-            at, ab = random.choice([x for x in valid_outfits if x != (bt, bb)] or [(bt, bb)])
+            bt1, bb1 = random.choice(basics)
         else:
-            bt, bb = valid_outfits[0]
-            at, ab = random.choice([x for x in valid_outfits if x != (bt, bb)] or [(bt, bb)])
+            bt1, bb1 = random.choice(valid_outfits)
             
-        return True, (tt, tb, bt, bb, at, ab, accs, used_undershirt)
+        remaining_basics = [x for x in basics if x != (bt1, bb1)]
+        if remaining_basics:
+            bt2, bb2 = random.choice(remaining_basics)
+        else:
+            remaining_all = [x for x in valid_outfits if x != (bt1, bb1)]
+            bt2, bb2 = random.choice(remaining_all) if remaining_all else (bt1, bb1)
+            
+        remaining_for_unique = [x for x in valid_outfits if x not in [(bt1, bb1), (bt2, bb2)]]
+        if non_basics and any(x in remaining_for_unique for x in non_basics):
+            at, ab = random.choice([x for x in remaining_for_unique if x in non_basics])
+        elif remaining_for_unique:
+            at, ab = random.choice(remaining_for_unique)
+        else:
+            at, ab = bt1, bb1
+            
+        return True, (tt, tb, bt1, bb1, bt2, bb2, at, ab, accs, used_undershirt)
     
     if s_tops and s_bots:
-        bt = next((x for x in s_tops if x["basic"]), s_tops[0])
-        bb = next((x for x in s_bots if x["basic"]), s_bots[0])
-        at = random.choice([x for x in s_tops if x != bt] or [bt])
-        ab = random.choice([x for x in s_bots if x != bb] or [bb])
-        return True, (tt, tb, bt, bb, at, ab, accs, used_undershirt)
+        bt1 = next((x for x in s_tops if x["basic"]), s_tops[0])
+        bb1 = next((x for x in s_bots if x["basic"]), s_bots[0])
+        bt2 = random.choice([x for x in s_tops if x != bt1] or [bt1])
+        bb2 = random.choice([x for x in s_bots if x != bb1] or [bb1])
+        at = random.choice([x for x in s_tops if not x["basic"]] or [bt1])
+        ab = random.choice([x for x in s_bots if not x["basic"]] or [bb1])
+        return True, (tt, tb, bt1, bb1, bt2, bb2, at, ab, accs, used_undershirt)
         
     return False, None
 
@@ -315,16 +338,16 @@ has_umbrella = st.sidebar.checkbox(t[lang]["umbrella"])
 has_undershirt = st.sidebar.checkbox(t[lang]["undershirt_lbl"])
 
 st.sidebar.header(t[lang]["wardrobe_title"])
-top_inners = [x[lang] for x in kiyafet_db["top_inner"]]
-top_outers = [x[lang] for x in kiyafet_db["top_outer"] if x["en"] != "None (Innerwear Only)"]
-bottom_outers = [x[lang] for x in kiyafet_db["bottom_outer"]]
-bottom_inners = [x[lang] for x in kiyafet_db["bottom_inner"] if x["en"] != "None (Underwear Only)"]
-acc_items = [x[lang] for x in kiyafet_db["accessories"]]
+top_inners = [fmt(x, lang) for x in kiyafet_db["top_inner"]]
+top_outers = [fmt(x, lang) for x in kiyafet_db["top_outer"] if x["en"] != "None (Innerwear Only)"]
+bottom_outers = [fmt(x, lang) for x in kiyafet_db["bottom_outer"]]
+bottom_inners = [fmt(x, lang) for x in kiyafet_db["bottom_inner"] if x["en"] != "None (Underwear Only)"]
+acc_items = [fmt(x, lang) for x in kiyafet_db["accessories"]]
 
-def_ti = [next(x[lang] for x in kiyafet_db["top_inner"] if x["en"] == e) for e in ["Short Sleeve T-Shirt", "Shirt", "Thin Knit Sweater", "Hoodie"]]
-def_to = [next(x[lang] for x in kiyafet_db["top_outer"] if x["en"] == e) for e in ["Thin Windbreaker", "Cardigan", "Winter Puffer Jacket"]]
-def_bo = [next(x[lang] for x in kiyafet_db["bottom_outer"] if x["en"] == e) for e in (["Jeans", "Sweatpants", "Tights (Sport/Thin)", "Shorts"] if st.session_state['ml_gender'] == "Female" else ["Jeans", "Sweatpants", "Shorts"])]
-def_ac = [next(x[lang] for x in kiyafet_db["accessories"] if x["en"] == e) for e in ["Beanie (Hat)", "Scarf", "Leather/Winter Gloves", "Sunglasses"]]
+def_ti = [fmt(x, lang) for x in kiyafet_db["top_inner"] if x["en"] in ["Short Sleeve T-Shirt", "Shirt", "Thin Knit Sweater", "Hoodie"]]
+def_to = [fmt(x, lang) for x in kiyafet_db["top_outer"] if x["en"] in ["Thin Windbreaker", "Cardigan", "Winter Puffer Jacket"]]
+def_bo = [fmt(x, lang) for x in kiyafet_db["bottom_outer"] if x["en"] in (["Jeans", "Sweatpants", "Tights (Sport/Thin)", "Shorts"] if st.session_state['ml_gender'] == "Female" else ["Jeans", "Sweatpants", "Shorts"])]
+def_ac = [fmt(x, lang) for x in kiyafet_db["accessories"] if x["en"] in ["Beanie (Hat)", "Scarf", "Leather/Winter Gloves", "Sunglasses"]]
 
 s_ti, s_to, s_bo, s_bi, s_ac = [], [], [], [], []
 with st.sidebar.expander(t[lang]["wt1"]):
@@ -343,8 +366,11 @@ with st.sidebar.expander(t[lang]["wt5"]):
     for i, x in enumerate(acc_items):
         if st.checkbox(x, value=(x in def_ac), key=f"ac_{i}"): s_ac.append(x)
 
-owned_tops = s_ti + s_to + [t[lang]["none_top"]]
-owned_bots = s_bo + s_bi + [t[lang]["none_bottom"]]
+none_t = fmt(next(x for x in kiyafet_db["top_outer"] if x["en"] == "None (Innerwear Only)"), lang)
+none_b = fmt(next(x for x in kiyafet_db["bottom_inner"] if x["en"] == "None (Underwear Only)"), lang)
+
+owned_tops = s_ti + s_to + [none_t]
+owned_bots = s_bo + s_bi + [none_b]
 owned_accs = s_ac
 
 cities = ["Istanbul", "Ankara", "Izmir", "London", "New York", "Paris", "Tokyo", "Berlin", t[lang]["city_other"]]
@@ -355,11 +381,11 @@ tab1, tab2 = st.tabs([t[lang]["tab1"], t[lang]["tab2"]])
 
 def render_top(ic, dis, used_under):
     base_str = f"🎽 {t[lang]['atlet_str']} + " if used_under else ""
-    if dis == t[lang]["none_top"]: return f"{base_str}{ic}"
+    if dis == none_t: return f"{base_str}{ic}"
     return f"{base_str}{ic} + {dis}"
 
 def render_bot(ic, dis):
-    if ic == t[lang]["none_bottom"]: return dis
+    if ic == none_b: return dis
     return f"{ic} + {dis}"
 
 with tab1:
@@ -381,18 +407,23 @@ with tab1:
                 with st.spinner(t[lang]["ai_calc"]):
                     ok, out = generate_outfit(flc, p_ml, w_kmh, tml, owned_tops, owned_bots, owned_accs, has_umbrella, has_undershirt)
                     if ok:
-                        tt, tb, bt, bb, at, ab, accs, used_under = out
+                        tt, tb, bt1, bb1, bt2, bb2, at, ab, accs, used_under = out
                         st.info(t[lang]["ai_target"].format(u=tt, a=tb))
                         st.success(t[lang]["success_outfit"])
-                        c1, c2 = st.columns(2)
+                        c1, c2, c3 = st.columns(3)
                         
                         c1.markdown(t[lang]["opt1"])
-                        c1.markdown(f"{t[lang]['top']} {render_top(bt['ic'], bt['dis'], used_under)}")
-                        c1.markdown(f"{t[lang]['bottom']} {render_bot(bb['ic'], bb['dis'])}")
+                        c1.markdown(f"{t[lang]['top']} {render_top(bt1['ic'], bt1['dis'], used_under)}")
+                        c1.markdown(f"{t[lang]['bottom']} {render_bot(bb1['ic'], bb1['dis'])}")
                         
                         c2.markdown(t[lang]["opt2"])
-                        c2.markdown(f"{t[lang]['top']} {render_top(at['ic'], at['dis'], used_under)}")
-                        c2.markdown(f"{t[lang]['bottom']} {render_bot(ab['ic'], ab['dis'])}")
+                        c2.markdown(f"{t[lang]['top']} {render_top(bt2['ic'], bt2['dis'], used_under)}")
+                        c2.markdown(f"{t[lang]['bottom']} {render_bot(bb2['ic'], bb2['dis'])}")
+                        
+                        c3.markdown(t[lang]["opt3"])
+                        c3.markdown(f"{t[lang]['top']} {render_top(at['ic'], at['dis'], used_under)}")
+                        c3.markdown(f"{t[lang]['bottom']} {render_bot(ab['ic'], ab['dis'])}")
+                        
                         if accs:
                             st.markdown("---")
                             st.markdown(f"{t[lang]['extra']} {', '.join(accs)}")
@@ -419,10 +450,9 @@ with tab2:
                         ok2, out = generate_outfit(day['feels_like'], day['precip'], day['wind'], sel_t_ml, owned_tops, owned_bots, owned_accs, has_umbrella, has_undershirt)
                         st.markdown("---")
                         if ok2:
-                            tt, tb, bt, bb, at, ab, accs, used_under = out
-                            st.write("👕 " + render_top(bt['ic'], bt['dis'], used_under))
-                            st.write("👖 " + render_bot(bb['ic'], bb['dis']))
+                            tt, tb, bt1, bb1, bt2, bb2, at, ab, accs, used_under = out
+                            st.write("👕 " + render_top(bt1['ic'], bt1['dis'], used_under))
+                            st.write("👖 " + render_bot(bb1['ic'], bb1['dis']))
                             if accs: st.write("🧣 *" + ", ".join(accs) + "*")
                         else:
                             st.write("⚠️ " + t[lang]["err_outfit"])
-            else: st.error(days)

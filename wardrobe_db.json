@@ -12,7 +12,8 @@
             "style": [
                 "Sport",
                 "Casual"
-            ]
+            ],
+            "icon": "👚"
         },
         {
             "en": "Sleeveless T-Shirt",
@@ -27,7 +28,8 @@
             "style": [
                 "Sport",
                 "Casual"
-            ]
+            ],
+            "icon": "🎽"
         },
         {
             "en": "Short Sleeve T-Shirt",
@@ -43,7 +45,8 @@
                 "Sport",
                 "Casual",
                 "Smart-Casual"
-            ]
+            ],
+            "icon": "👕"
         },
         {
             "en": "Polo T-Shirt",
@@ -58,7 +61,8 @@
             "style": [
                 "Casual",
                 "Smart-Casual"
-            ]
+            ],
+            "icon": "👕"
         },
         {
             "en": "Elegant Blouse",
@@ -72,7 +76,8 @@
             "style": [
                 "Smart-Casual",
                 "Formal"
-            ]
+            ],
+            "icon": "👚"
         },
         {
             "en": "Shirt",
@@ -88,7 +93,8 @@
                 "Casual",
                 "Smart-Casual",
                 "Formal"
-            ]
+            ],
+            "icon": "👔"
         },
         {
             "en": "Long Sleeve T-Shirt",
@@ -103,7 +109,8 @@
             "style": [
                 "Sport",
                 "Casual"
-            ]
+            ],
+            "icon": "👕"
         },
         {
             "en": "Flannel / Thick Shirt",
@@ -117,7 +124,8 @@
             "hoodie": false,
             "style": [
                 "Casual"
-            ]
+            ],
+            "icon": "👔"
         },
         {
             "en": "Thin Knit Sweater",
@@ -132,7 +140,8 @@
             "style": [
                 "Casual",
                 "Smart-Casual"
-            ]
+            ],
+            "icon": "🧶"
         },
         {
             "en": "Hoodie",
@@ -147,7 +156,8 @@
             "style": [
                 "Sport",
                 "Casual"
-            ]
+            ],
+            "icon": "🧥"
         },
         {
             "en": "Quarter-Zip Fleece",
@@ -162,7 +172,8 @@
             "style": [
                 "Sport",
                 "Casual"
-            ]
+            ],
+            "icon": "🧥"
         },
         {
             "en": "Turtleneck Sweater",
@@ -178,7 +189,8 @@
                 "Casual",
                 "Smart-Casual",
                 "Formal"
-            ]
+            ],
+            "icon": "🧶"
         },
         {
             "en": "Thick Wool Sweater",
@@ -193,7 +205,8 @@
             "style": [
                 "Casual",
                 "Smart-Casual"
-            ]
+            ],
+            "icon": "🧶"
         }
     ],
     "top_outer": [
@@ -209,7 +222,8 @@
             "hoodie": false,
             "style": [
                 "Universal"
-            ]
+            ],
+            "icon": "❌"
         },
         {
             "en": "Hooded Raincoat",
@@ -224,7 +238,8 @@
             "style": [
                 "Sport",
                 "Casual"
-            ]
+            ],
+            "icon": "☔"
         },
         {
             "en": "Thin Windbreaker",
@@ -239,7 +254,8 @@
             "style": [
                 "Sport",
                 "Casual"
-            ]
+            ],
+            "icon": "🧥"
         },
         {
             "en": "Puffer Vest",
@@ -254,7 +270,8 @@
             "style": [
                 "Sport",
                 "Casual"
-            ]
+            ],
+            "icon": "🦺"
         },
         {
             "en": "Cardigan",
@@ -269,7 +286,8 @@
             "style": [
                 "Casual",
                 "Smart-Casual"
-            ]
+            ],
+            "icon": "🧶"
         },
         {
             "en": "Blazer",
@@ -284,7 +302,8 @@
             "style": [
                 "Smart-Casual",
                 "Formal"
-            ]
+            ],
+            "icon": "🧥"
         },
         {
             "en": "Denim Jacket",
@@ -299,7 +318,8 @@
             "style": [
                 "Casual",
                 "Smart-Casual"
-            ]
+            ],
+            "icon": "🧥"
         },
         {
             "en": "Trench Coat",
@@ -314,7 +334,8 @@
             "style": [
                 "Smart-Casual",
                 "Formal"
-            ]
+            ],
+            "icon": "🧥"
         },
         {
             "en": "Leather Jacket",
@@ -329,7 +350,8 @@
             "style": [
                 "Casual",
                 "Smart-Casual"
-            ]
+            ],
+            "icon": "🧥"
         },
         {
             "en": "Winter Puffer Jacket",
@@ -344,7 +366,8 @@
             "style": [
                 "Sport",
                 "Casual"
-            ]
+            ],
+            "icon": "🧥"
         },
         {
             "en": "Faux Fur Coat",
@@ -358,7 +381,8 @@
             "style": [
                 "Smart-Casual",
                 "Formal"
-            ]
+            ],
+            "icon": "🧥"
         },
         {
             "en": "Thick Wool Coat",
@@ -374,7 +398,8 @@
                 "Casual",
                 "Smart-Casual",
                 "Formal"
-            ]
+            ],
+            "icon": "🧥"
         },
         {
             "en": "Heavy Overcoat",
@@ -389,7 +414,8 @@
             "style": [
                 "Smart-Casual",
                 "Formal"
-            ]
+            ],
+            "icon": "🧥"
         }
     ],
     "bottom_inner": [
@@ -404,7 +430,8 @@
             "basic": true,
             "style": [
                 "Universal"
-            ]
+            ],
+            "icon": "❌"
         },
         {
             "en": "Fishnet/Patterned Tights",
@@ -418,7 +445,8 @@
                 "Casual",
                 "Smart-Casual",
                 "Formal"
-            ]
+            ],
+            "icon": "🦵"
         },
         {
             "en": "Thin Tights",
@@ -430,7 +458,8 @@
             "basic": true,
             "style": [
                 "Universal"
-            ]
+            ],
+            "icon": "🦵"
         },
         {
             "en": "Thick Thermal Tights",
@@ -442,7 +471,8 @@
             "basic": false,
             "style": [
                 "Universal"
-            ]
+            ],
+            "icon": "👖"
         },
         {
             "en": "Thermal Underwear",
@@ -455,7 +485,8 @@
             "basic": false,
             "style": [
                 "Universal"
-            ]
+            ],
+            "icon": "👖"
         }
     ],
     "bottom_outer": [
@@ -470,7 +501,8 @@
             "style": [
                 "Casual",
                 "Smart-Casual"
-            ]
+            ],
+            "icon": "👗"
         },
         {
             "en": "Pleated Skirt",
@@ -483,7 +515,8 @@
             "style": [
                 "Casual",
                 "Smart-Casual"
-            ]
+            ],
+            "icon": "👗"
         },
         {
             "en": "Shorts",
@@ -497,7 +530,8 @@
             "style": [
                 "Sport",
                 "Casual"
-            ]
+            ],
+            "icon": "🩳"
         },
         {
             "en": "Tights (Sport/Thin)",
@@ -510,7 +544,8 @@
             "style": [
                 "Sport",
                 "Casual"
-            ]
+            ],
+            "icon": "👖"
         },
         {
             "en": "Linen Pants",
@@ -524,7 +559,8 @@
             "style": [
                 "Casual",
                 "Smart-Casual"
-            ]
+            ],
+            "icon": "👖"
         },
         {
             "en": "Thin Fabric Pants",
@@ -538,7 +574,8 @@
             "style": [
                 "Smart-Casual",
                 "Formal"
-            ]
+            ],
+            "icon": "👖"
         },
         {
             "en": "Maxi (Long) Skirt",
@@ -551,7 +588,8 @@
             "style": [
                 "Casual",
                 "Smart-Casual"
-            ]
+            ],
+            "icon": "👗"
         },
         {
             "en": "Chino Pants",
@@ -565,7 +603,8 @@
             "style": [
                 "Casual",
                 "Smart-Casual"
-            ]
+            ],
+            "icon": "👖"
         },
         {
             "en": "Jeans",
@@ -579,7 +618,8 @@
             "style": [
                 "Casual",
                 "Smart-Casual"
-            ]
+            ],
+            "icon": "👖"
         },
         {
             "en": "Cargo Pants",
@@ -593,7 +633,8 @@
             "style": [
                 "Sport",
                 "Casual"
-            ]
+            ],
+            "icon": "👖"
         },
         {
             "en": "Sweatpants",
@@ -606,7 +647,8 @@
             "basic": true,
             "style": [
                 "Sport"
-            ]
+            ],
+            "icon": "👖"
         },
         {
             "en": "Fleece-Lined Winter Tights",
@@ -619,7 +661,8 @@
             "style": [
                 "Sport",
                 "Casual"
-            ]
+            ],
+            "icon": "👖"
         },
         {
             "en": "Fleece Joggers",
@@ -632,7 +675,8 @@
             "basic": true,
             "style": [
                 "Sport"
-            ]
+            ],
+            "icon": "👖"
         },
         {
             "en": "Thick Corduroy Pants",
@@ -646,7 +690,8 @@
             "style": [
                 "Casual",
                 "Smart-Casual"
-            ]
+            ],
+            "icon": "👖"
         }
     ],
     "accessories": [
@@ -660,7 +705,8 @@
             "basic": true,
             "style": [
                 "Universal"
-            ]
+            ],
+            "icon": "🕶️"
         },
         {
             "en": "Beanie (Hat)",
@@ -672,7 +718,8 @@
             "basic": true,
             "style": [
                 "Universal"
-            ]
+            ],
+            "icon": "🧢"
         },
         {
             "en": "Scarf",
@@ -684,7 +731,8 @@
             "basic": true,
             "style": [
                 "Universal"
-            ]
+            ],
+            "icon": "🧣"
         },
         {
             "en": "Leather/Winter Gloves",
@@ -696,7 +744,8 @@
             "basic": true,
             "style": [
                 "Universal"
-            ]
+            ],
+            "icon": "🧤"
         }
     ]
 }
