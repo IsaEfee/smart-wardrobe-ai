@@ -6,7 +6,7 @@ import os
 import requests
 
 # --- PAGE CONFIG ---
-st.set_page_config(page_title="Smart Wardrobe Assistant", page_icon="🧥", layout="wide")
+st.set_page_config(page_title="Smart Wardrobe Assistant", page_icon="🧥", layout="wide", initial_sidebar_state="expanded")
 
 API_KEY = "3795ac331def1d702f917c283a417051"
 
@@ -256,14 +256,27 @@ def_ti_ui = [next(x[lang] for x in kiyafet_db["top_inner"] if x["en"] == e) for 
 def_to_ui = [next(x[lang] for x in kiyafet_db["top_outer"] if x["en"] == e) for e in def_to_en]
 def_bo_ui = [next(x[lang] for x in kiyafet_db["bottom_outer"] if x["en"] == e) for e in def_bo_en]
 
+sel_top_inner, sel_top_outer, sel_bottom_outer, sel_bottom_inner = [], [], [], []
+
 with st.sidebar.expander(t[lang]["wt1"], expanded=False):
-    sel_top_inner = st.multiselect(t[lang]["what_do_u_have"], top_inners, default=def_ti_ui)
+    st.markdown(f"**{t[lang]['what_do_u_have']}**")
+    for i, item in enumerate(top_inners):
+        if st.checkbox(item, value=(item in def_ti_ui), key=f"ti_{i}"): sel_top_inner.append(item)
+
 with st.sidebar.expander(t[lang]["wt2"], expanded=False):
-    sel_top_outer = st.multiselect(t[lang]["what_do_u_have"], top_outers, default=def_to_ui)
+    st.markdown(f"**{t[lang]['what_do_u_have']}**")
+    for i, item in enumerate(top_outers):
+        if st.checkbox(item, value=(item in def_to_ui), key=f"to_{i}"): sel_top_outer.append(item)
+
 with st.sidebar.expander(t[lang]["wt3"], expanded=False):
-    sel_bottom_outer = st.multiselect(t[lang]["what_do_u_have"], bottom_outers, default=def_bo_ui)
+    st.markdown(f"**{t[lang]['what_do_u_have']}**")
+    for i, item in enumerate(bottom_outers):
+        if st.checkbox(item, value=(item in def_bo_ui), key=f"bo_{i}"): sel_bottom_outer.append(item)
+
 with st.sidebar.expander(t[lang]["wt4"], expanded=False):
-    sel_bottom_inner = st.multiselect(t[lang]["what_do_u_have"], bottom_inners, default=[])
+    st.markdown(f"**{t[lang]['what_do_u_have']}**")
+    for i, item in enumerate(bottom_inners):
+        if st.checkbox(item, value=False, key=f"bi_{i}"): sel_bottom_inner.append(item)
 
 owned_tops = sel_top_inner + sel_top_outer
 owned_bottoms = sel_bottom_outer + sel_bottom_inner
