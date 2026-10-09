@@ -58,7 +58,9 @@ t = {
         "warn_snow": "❄️ Snow is expected later! Make sure to carry winter-ready outerwear.",
         "warn_temp": "📉 Temperature will drop to {t:.1f}°C later. We styled you for now, but recommend carrying: **{carry}**",
         "warn_temp_fallback": "📉 Temperature will drop to {t:.1f}°C later. Bring some outerwear!",
-        "warn_warm": "☀️ Temperature will rise to {t:.1f}°C later. Outfit designed with removable layers (onion strategy) so you don't overheat!"
+        "warn_warm": "☀️ Temperature will rise to {t:.1f}°C later. Outfit designed with removable layers (onion strategy) so you don't overheat!",
+        "warn_no_shorts": "👖 Long pants selected instead of shorts to protect your legs from the cold/rain expected later!",
+        "warn_fallback_outfit": "⚠️ No perfectly matching items found in your wardrobe for this weather. The closest alternatives were suggested."
     },
     "tr": {
         "welcome": "👋 Akıllı Kıyafet Asistanına Hoş Geldiniz!",
@@ -106,7 +108,9 @@ t = {
         "warn_snow": "❄️ İlerleyen saatlerde KAR bekleniyor. Yanınıza kara hazırlıklı dış giyim almayı unutmayın!",
         "warn_temp": "📉 Hava ilerleyen saatlerde {t:.1f}°C'ye kadar soğuyacak. Kombininiz şimdiki havaya göre yapıldı, yanınıza ekstra olarak **{carry}** almanızı öneririz!",
         "warn_temp_fallback": "📉 Hava ilerleyen saatlerde {t:.1f}°C'ye kadar soğuyacak. Yanınıza mutlaka kalın bir dış giyim alın!",
-        "warn_warm": "☀️ Hava ilerleyen saatlerde {t:.1f}°C'ye kadar ısınacak. Öğlen terlememeniz için kombin 'çıkarılabilir katmanlı (soğan taktiği)' olarak özel ayarlandı!"
+        "warn_warm": "☀️ Hava ilerleyen saatlerde {t:.1f}°C'ye kadar ısınacak. Öğlen terlememeniz için kombin 'çıkarılabilir katmanlı (soğan taktiği)' olarak özel ayarlandı!",
+        "warn_no_shorts": "👖 Şu an sıcak olsa da ilerleyen saatlerde havanın soğuyacağı/bozacağı öngörüldü. Bacaklarınızın üşümemesi için şort yerine uzun pantolon tercih edildi!",
+        "warn_fallback_outfit": "⚠️ Dolabınızda bu havaya tam uygun yalıtımda kıyafet bulunamadığı için, mevcut olan en iyi alternatifler önerildi."
     }
 }
 
@@ -236,7 +240,7 @@ def get_trip_forecast(city, duration_hours):
     except Exception as e:
         return False, [], []
 
-def generate_outfit(feels_like_c, precip_ml, wind_kmh, time_ml, owned_tops, owned_bottoms, owned_accs, has_umbrella, has_undershirt, layering_needed=False):
+def generate_outfit(feels_like_c, precip_ml, wind_kmh, time_ml, owned_tops, owned_bottoms, owned_accs, has_umbrella, has_undershirt, layering_needed=False, ban_shorts=False):
     gen_enc = encoders['gender'].transform([st.session_state['ml_gender']])[0]
     prof_enc = encoders['profile'].transform([st.session_state['ml_profile']])[0]
     precip_enc = encoders['precip'].transform([precip_ml])[0]
@@ -269,7 +273,7 @@ def generate_outfit(feels_like_c, precip_ml, wind_kmh, time_ml, owned_tops, owne
     else:
         tt_search = tt
 
-    s_tops, s_bots = [], []
+    s_tops_temp, s_bots_temp = [], []
     for ic in kiyafet_db["top_inner"]:
         for dis in kiyafet_db["top_outer"]:
             ic_str, dis_str = fmt(ic, lang), fmt(dis, lang)
@@ -287,13 +291,20 @@ def generate_outfit(feels_like_c, precip_ml, wind_kmh, time_ml, owned_tops, owne
             
             if not is_style_compatible(ic["style"], dis["style"]): continue
             
-            if abs((ic["clo"] + dis["clo"]) - tt_search) <= 0.20:
-                if "Universal" in ic["style"]: top_style = dis["style"]
-                elif "Universal" in dis["style"]: top_style = ic["style"]
-                else: top_style = list(set(ic["style"]).intersection(set(dis["style"])))
-                
-                s_tops.append({"ic": ic_str, "dis": dis_str, "basic": ic["basic"] and dis["basic"], "style": top_style, "clo": ic["clo"] + dis["clo"]})
-                
+            if "Universal" in ic["style"]: top_style = dis["style"]
+            elif "Universal" in dis["style"]: top_style = ic["style"]
+            else: top_style = list(set(ic["style"]).intersection(set(dis["style"])))
+            
+            diff = abs((ic["clo"] + dis["clo"]) - tt_search)
+            s_tops_temp.append({"ic": ic_str, "dis": dis_str, "basic": ic["basic"] and dis["basic"], "style": top_style, "clo": ic["clo"] + dis["clo"], "diff": diff})
+
+    if s_tops_temp:
+        s_tops = [x for x in s_tops_temp if x["diff"] <= 0.25]
+        if not s_tops:
+            s_tops_temp.sort(key=lambda x: x["diff"])
+            s_tops = [x for x in s_tops_temp if x["diff"] <= s_tops_temp[0]["diff"] + 0.05]
+    else: s_tops = []
+            
     for ic in kiyafet_db["bottom_inner"]:
         for dis in kiyafet_db["bottom_outer"]:
             ic_str, dis_str = fmt(ic, lang), fmt(dis, lang)
@@ -302,18 +313,31 @@ def generate_outfit(feels_like_c, precip_ml, wind_kmh, time_ml, owned_tops, owne
             if precip_ml in ["Rain", "Snow"] and "Shorts" in dis["en"]: continue
             if feels_like_c < 20 and "Shorts" in dis["en"]: continue
             if dis["en"] == "Shorts" and ic["en"] != "None (Underwear Only)": continue
+            if ban_shorts and "Shorts" in dis["en"]: continue
             
             if not is_style_compatible(ic["style"], dis["style"]): continue
             
-            if abs((ic["clo"] + dis["clo"]) - tb) <= 0.25:
-                if "Universal" in ic["style"]: bot_style = dis["style"]
-                elif "Universal" in dis["style"]: bot_style = ic["style"]
-                else: bot_style = list(set(ic["style"]).intersection(set(dis["style"])))
-                
-                s_bots.append({"ic": ic_str, "dis": dis_str, "basic": ic["basic"] and dis["basic"], "style": bot_style, "clo": ic["clo"] + dis["clo"]})
+            if "Universal" in ic["style"]: bot_style = dis["style"]
+            elif "Universal" in dis["style"]: bot_style = ic["style"]
+            else: bot_style = list(set(ic["style"]).intersection(set(dis["style"])))
+            
+            diff = abs((ic["clo"] + dis["clo"]) - tb)
+            s_bots_temp.append({"ic": ic_str, "dis": dis_str, "basic": ic["basic"] and dis["basic"], "style": bot_style, "clo": ic["clo"] + dis["clo"], "diff": diff})
+
+    if s_bots_temp:
+        s_bots = [x for x in s_bots_temp if x["diff"] <= 0.30]
+        if not s_bots:
+            s_bots_temp.sort(key=lambda x: x["diff"])
+            s_bots = [x for x in s_bots_temp if x["diff"] <= s_bots_temp[0]["diff"] + 0.05]
+    else: s_bots = []
                 
     def get_acc(en_name):
         return next(fmt(x, lang) for x in kiyafet_db["accessories"] if x["en"] == en_name)
+    
+    used_fallback = False
+    if s_tops and s_tops[0]["diff"] > 0.25: used_fallback = True
+    if s_bots and s_bots[0]["diff"] > 0.30: used_fallback = True
+
                 
     accs = []
     if precip_ml == "Clear" and time_ml in ["Morning", "Afternoon"] and feels_like_c > 15:
@@ -384,7 +408,7 @@ def generate_outfit(feels_like_c, precip_ml, wind_kmh, time_ml, owned_tops, owne
             res3_all = get_diverse(remaining_for_unique, [bt1["ic"], bt2["ic"]], [bb1["ic"], bb2["ic"]])
             at, ab = res3_all if res3_all else (bt1, bb1)
             
-        return True, (tt, tb, bt1, bb1, bt2, bb2, at, ab, accs, used_undershirt)
+        return True, (tt, tb, bt1, bb1, bt2, bb2, at, ab, accs, used_undershirt, used_fallback)
     
     if s_tops and s_bots:
         bt1 = next((x for x in s_tops if x["basic"]), s_tops[0])
@@ -393,7 +417,7 @@ def generate_outfit(feels_like_c, precip_ml, wind_kmh, time_ml, owned_tops, owne
         bb2 = random.choice([x for x in s_bots if x != bb1] or [bb1])
         at = random.choice([x for x in s_tops if not x["basic"]] or [bt1])
         ab = random.choice([x for x in s_bots if not x["basic"]] or [bb1])
-        return True, (tt, tb, bt1, bb1, bt2, bb2, at, ab, accs, used_undershirt)
+        return True, (tt, tb, bt1, bb1, bt2, bb2, at, ab, accs, used_undershirt, used_fallback)
         
     return False, None
 
@@ -496,6 +520,7 @@ with tab1:
                             
                             max_flc = max(all_temps)
                             layering_needed = False
+                            ban_shorts = False
                             
                             if (max_flc - flc) >= 4:
                                 layering_needed = True
@@ -518,6 +543,11 @@ with tab1:
                                 else:
                                     warnings.append(t[lang]["warn_rain_fallback"])
                                     
+                            if (min_flc < 19) or ("Rain" in all_precips) or ("Snow" in all_precips):
+                                ban_shorts = True
+                                if flc >= 22:
+                                    warnings.append(t[lang]["warn_no_shorts"])
+                                    
                             if (flc - min_flc) >= 3:
                                 extra_clo = (flc - min_flc) * 0.08
                                 best_carry = None
@@ -538,9 +568,11 @@ with tab1:
                     for w in warnings:
                         st.warning(w)
                         
-                    ok, out = generate_outfit(trip_flc, trip_precip, w_kmh, tml, owned_tops, owned_bots, owned_accs, has_umbrella, has_undershirt, layering_needed=layering_needed if 'layering_needed' in locals() else False)
+                    ok, out = generate_outfit(trip_flc, trip_precip, w_kmh, tml, owned_tops, owned_bots, owned_accs, has_umbrella, has_undershirt, layering_needed=layering_needed if 'layering_needed' in locals() else False, ban_shorts=ban_shorts if 'ban_shorts' in locals() else False)
                     if ok:
-                        tt, tb, bt1, bb1, bt2, bb2, at, ab, accs, used_under = out
+                        tt, tb, bt1, bb1, bt2, bb2, at, ab, accs, used_under, used_fallback = out
+                        if used_fallback:
+                            st.warning(t[lang]["warn_fallback_outfit"])
                         st.info(t[lang]["ai_target"].format(u=tt, a=tb))
                         st.success(t[lang]["success_outfit"])
                         c1, c2, c3 = st.columns(3)
