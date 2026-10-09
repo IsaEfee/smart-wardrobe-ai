@@ -51,7 +51,13 @@ t = {
         "tab1": "⏳ Right Now", "tab2": "📅 5-Day Planner",
         "plan_time_lbl": "Select time for daily forecast:",
         "btn_plan": "Generate 5-Day Plan 🗓️",
-        "atlet_str": "Undershirt"
+        "atlet_str": "Undershirt",
+        "dur_lbl": "How many hours will you be outside?",
+        "warn_rain": "⚠️ Rain is expected later. We styled you for now, but don't forget to take your **{carry}**!",
+        "warn_rain_fallback": "⚠️ Rain is expected later! No umbrella or hooded item found in your wardrobe, be careful!",
+        "warn_snow": "❄️ Snow is expected later! Make sure to carry winter-ready outerwear.",
+        "warn_temp": "📉 Temperature will drop to {t:.1f}°C later. We styled you for now, but recommend carrying: **{carry}**",
+        "warn_temp_fallback": "📉 Temperature will drop to {t:.1f}°C later. Bring some outerwear!"
     },
     "tr": {
         "welcome": "👋 Akıllı Kıyafet Asistanına Hoş Geldiniz!",
@@ -92,7 +98,13 @@ t = {
         "tab1": "⏳ Şu An", "tab2": "📅 5 Günlük Planlayıcı",
         "plan_time_lbl": "Tahminlerin Hangi Saat İçin Yapılmasını İstersin?",
         "btn_plan": "5 Günlük Plan Oluştur 🗓️",
-        "atlet_str": "İçlik Atlet"
+        "atlet_str": "İçlik Atlet",
+        "dur_lbl": "Dışarıda Kalma Süreniz (Saat):",
+        "warn_rain": "⚠️ İlerleyen saatlerde YAĞMUR bekleniyor. Kombininiz şu anki havaya göre yapıldı, yanınıza mutlaka **{carry}** alın!",
+        "warn_rain_fallback": "⚠️ İlerleyen saatlerde YAĞMUR bekleniyor. Dolabınızda şemsiye veya kapüşonlu bulunamadı, dikkatli olun!",
+        "warn_snow": "❄️ İlerleyen saatlerde KAR bekleniyor. Yanınıza kara hazırlıklı dış giyim almayı unutmayın!",
+        "warn_temp": "📉 Hava ilerleyen saatlerde {t:.1f}°C'ye kadar soğuyacak. Kombininiz şimdiki havaya göre yapıldı, yanınıza ekstra olarak **{carry}** almanızı öneririz!",
+        "warn_temp_fallback": "📉 Hava ilerleyen saatlerde {t:.1f}°C'ye kadar soğuyacak. Yanınıza mutlaka kalın bir dış giyim alın!"
     }
 }
 
@@ -192,6 +204,35 @@ def get_5_day_forecast(city, target_time_str, lang):
             return True, results
         return False, "API Error"
     except Exception as e: return False, str(e)
+
+def get_trip_forecast(city, duration_hours):
+    url = f"http://api.openweathermap.org/data/2.5/forecast?q={city}&appid={API_KEY}&units=metric"
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            data = response.json()
+            tz = data["city"]["timezone"]
+            now = datetime.datetime.utcnow() + datetime.timedelta(seconds=tz)
+            end_time = now + datetime.timedelta(hours=duration_hours)
+            
+            flcs = []
+            precips = []
+            
+            for item in data["list"]:
+                dt = datetime.datetime.utcnow() + datetime.timedelta(seconds=tz) + datetime.timedelta(seconds=(item["dt"] - datetime.datetime.utcnow().timestamp()))
+                # Daha güvenli dt hesaplama:
+                dt = datetime.datetime.utcfromtimestamp(item["dt"]) + datetime.timedelta(seconds=tz)
+                if dt > end_time + datetime.timedelta(hours=3): break
+                if dt >= now - datetime.timedelta(hours=3):
+                    flcs.append(item["main"]["feels_like"])
+                    wm = item["weather"][0]["main"]
+                    p_ml = "Rain" if wm in ["Rain", "Drizzle", "Thunderstorm"] else ("Snow" if wm == "Snow" else "Clear")
+                    precips.append(p_ml)
+            
+            return True, flcs, precips
+        return False, [], []
+    except Exception as e:
+        return False, [], []
 
 def generate_outfit(feels_like_c, precip_ml, wind_kmh, time_ml, owned_tops, owned_bottoms, owned_accs, has_umbrella, has_undershirt):
     gen_enc = encoders['gender'].transform([st.session_state['ml_gender']])[0]
@@ -429,9 +470,62 @@ with tab1:
             m3.metric(t[lang]["precip"], p_ui)
             m4.metric(t[lang]["wind"], f"{w_kmh:.1f} km/h")
             
+            st.markdown("---")
+            duration = st.slider(t[lang]["dur_lbl"], min_value=1, max_value=12, value=1, step=1)
+            
             if st.button(t[lang]["btn_suggest"], type="primary", key="btn_now"):
                 with st.spinner(t[lang]["ai_calc"]):
-                    ok, out = generate_outfit(flc, p_ml, w_kmh, tml, owned_tops, owned_bots, owned_accs, has_umbrella, has_undershirt)
+                    trip_flc = flc
+                    trip_precip = p_ml
+                    warnings = []
+                    
+                    if duration > 2:
+                        ok_f, f_flcs, f_pre = get_trip_forecast(city, duration)
+                        if ok_f and f_flcs:
+                            all_temps = [flc] + f_flcs
+                            all_precips = [p_ml] + f_pre
+                            
+                            avg_flc = sum(all_temps) / len(all_temps)
+                            min_flc = min(all_temps)
+                            
+                            if "Snow" in all_precips and p_ml != "Snow":
+                                warnings.append(t[lang]["warn_snow"])
+                            elif "Rain" in all_precips and p_ml != "Rain":
+                                rain_item = None
+                                if not has_umbrella:
+                                    for item in kiyafet_db["top_outer"]:
+                                        if fmt(item, lang) in owned_tops and item["hoodie"]:
+                                            rain_item = fmt(item, lang)
+                                            break
+                                if has_umbrella:
+                                    umb_str = "☂️ Şemsiye" if lang == "tr" else "☂️ Umbrella"
+                                    warnings.append(t[lang]["warn_rain"].format(carry=umb_str))
+                                elif rain_item:
+                                    warnings.append(t[lang]["warn_rain"].format(carry=rain_item))
+                                else:
+                                    warnings.append(t[lang]["warn_rain_fallback"])
+                                    
+                            if (flc - min_flc) >= 3:
+                                extra_clo = (flc - min_flc) * 0.08
+                                best_carry = None
+                                best_diff = 999
+                                for item in kiyafet_db["top_outer"]:
+                                    if fmt(item, lang) in owned_tops and item["en"] != "None (Innerwear Only)":
+                                        diff = abs(item["clo"] - extra_clo)
+                                        if diff < best_diff:
+                                            best_diff = diff
+                                            best_carry = fmt(item, lang)
+                                            
+                                if best_carry:
+                                    warnings.append(t[lang]["warn_temp"].format(t=min_flc, carry=best_carry))
+                                else:
+                                    warnings.append(t[lang]["warn_temp_fallback"].format(t=min_flc))
+                                # trip_flc bilerek değiştirilmiyor, böylece kombin ŞU AN'a göre yapılıyor
+                                
+                    for w in warnings:
+                        st.warning(w)
+                        
+                    ok, out = generate_outfit(trip_flc, trip_precip, w_kmh, tml, owned_tops, owned_bots, owned_accs, has_umbrella, has_undershirt)
                     if ok:
                         tt, tb, bt1, bb1, bt2, bb2, at, ab, accs, used_under = out
                         st.info(t[lang]["ai_target"].format(u=tt, a=tb))
