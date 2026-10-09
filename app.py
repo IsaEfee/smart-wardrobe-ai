@@ -57,7 +57,8 @@ t = {
         "warn_rain_fallback": "⚠️ Rain is expected later! No umbrella or hooded item found in your wardrobe, be careful!",
         "warn_snow": "❄️ Snow is expected later! Make sure to carry winter-ready outerwear.",
         "warn_temp": "📉 Temperature will drop to {t:.1f}°C later. We styled you for now, but recommend carrying: **{carry}**",
-        "warn_temp_fallback": "📉 Temperature will drop to {t:.1f}°C later. Bring some outerwear!"
+        "warn_temp_fallback": "📉 Temperature will drop to {t:.1f}°C later. Bring some outerwear!",
+        "warn_warm": "☀️ Temperature will rise to {t:.1f}°C later. Outfit designed with removable layers (onion strategy) so you don't overheat!"
     },
     "tr": {
         "welcome": "👋 Akıllı Kıyafet Asistanına Hoş Geldiniz!",
@@ -104,7 +105,8 @@ t = {
         "warn_rain_fallback": "⚠️ İlerleyen saatlerde YAĞMUR bekleniyor. Dolabınızda şemsiye veya kapüşonlu bulunamadı, dikkatli olun!",
         "warn_snow": "❄️ İlerleyen saatlerde KAR bekleniyor. Yanınıza kara hazırlıklı dış giyim almayı unutmayın!",
         "warn_temp": "📉 Hava ilerleyen saatlerde {t:.1f}°C'ye kadar soğuyacak. Kombininiz şimdiki havaya göre yapıldı, yanınıza ekstra olarak **{carry}** almanızı öneririz!",
-        "warn_temp_fallback": "📉 Hava ilerleyen saatlerde {t:.1f}°C'ye kadar soğuyacak. Yanınıza mutlaka kalın bir dış giyim alın!"
+        "warn_temp_fallback": "📉 Hava ilerleyen saatlerde {t:.1f}°C'ye kadar soğuyacak. Yanınıza mutlaka kalın bir dış giyim alın!",
+        "warn_warm": "☀️ Hava ilerleyen saatlerde {t:.1f}°C'ye kadar ısınacak. Öğlen terlememeniz için kombin 'çıkarılabilir katmanlı (soğan taktiği)' olarak özel ayarlandı!"
     }
 }
 
@@ -234,7 +236,7 @@ def get_trip_forecast(city, duration_hours):
     except Exception as e:
         return False, [], []
 
-def generate_outfit(feels_like_c, precip_ml, wind_kmh, time_ml, owned_tops, owned_bottoms, owned_accs, has_umbrella, has_undershirt):
+def generate_outfit(feels_like_c, precip_ml, wind_kmh, time_ml, owned_tops, owned_bottoms, owned_accs, has_umbrella, has_undershirt, layering_needed=False):
     gen_enc = encoders['gender'].transform([st.session_state['ml_gender']])[0]
     prof_enc = encoders['profile'].transform([st.session_state['ml_profile']])[0]
     precip_enc = encoders['precip'].transform([precip_ml])[0]
@@ -278,6 +280,10 @@ def generate_outfit(feels_like_c, precip_ml, wind_kmh, time_ml, owned_tops, owne
             is_no = dis["en"] == "None (Innerwear Only)"
             if feels_like_c < 19 and ic["en"] in ["Short Sleeve T-Shirt", "Sleeveless T-Shirt", "Tank Top / Crop Top", "Elegant Blouse", "Polo T-Shirt"] and is_no: continue
             if feels_like_c < 22 and wind_kmh > 15 and is_no: continue
+            
+            if layering_needed:
+                if is_no: continue
+                if ic["clo"] > 0.20: continue
             
             if not is_style_compatible(ic["style"], dis["style"]): continue
             
@@ -488,6 +494,13 @@ with tab1:
                             avg_flc = sum(all_temps) / len(all_temps)
                             min_flc = min(all_temps)
                             
+                            max_flc = max(all_temps)
+                            layering_needed = False
+                            
+                            if (max_flc - flc) >= 4:
+                                layering_needed = True
+                                warnings.append(t[lang]["warn_warm"].format(t=max_flc))
+                                
                             if "Snow" in all_precips and p_ml != "Snow":
                                 warnings.append(t[lang]["warn_snow"])
                             elif "Rain" in all_precips and p_ml != "Rain":
@@ -525,7 +538,7 @@ with tab1:
                     for w in warnings:
                         st.warning(w)
                         
-                    ok, out = generate_outfit(trip_flc, trip_precip, w_kmh, tml, owned_tops, owned_bots, owned_accs, has_umbrella, has_undershirt)
+                    ok, out = generate_outfit(trip_flc, trip_precip, w_kmh, tml, owned_tops, owned_bots, owned_accs, has_umbrella, has_undershirt, layering_needed=layering_needed if 'layering_needed' in locals() else False)
                     if ok:
                         tt, tb, bt1, bb1, bt2, bb2, at, ab, accs, used_under = out
                         st.info(t[lang]["ai_target"].format(u=tt, a=tb))
