@@ -60,7 +60,9 @@ t = {
         "warn_temp_fallback": "📉 Temperature will drop to {t:.1f}°C later. Bring some outerwear!",
         "warn_warm": "☀️ Temperature will rise to {t:.1f}°C later. Outfit designed with removable layers (onion strategy) so you don't overheat!",
         "warn_no_shorts": "👖 Long pants selected instead of shorts to protect your legs from the cold/rain expected later!",
-        "warn_fallback_outfit": "⚠️ No perfectly matching items found in your wardrobe for this weather. The closest alternatives were suggested."
+        "warn_fallback_outfit": "⚠️ No perfectly matching items found in your wardrobe for this weather. The closest alternatives were suggested.",
+        "start_lbl": "How many hours until you leave?",
+        "info_offset": "⏱️ Outfit generated for {h} hours from now ({t:.1f}°C base temp)."
     },
     "tr": {
         "welcome": "👋 Akıllı Kıyafet Asistanına Hoş Geldiniz!",
@@ -110,7 +112,9 @@ t = {
         "warn_temp_fallback": "📉 Hava ilerleyen saatlerde {t:.1f}°C'ye kadar soğuyacak. Yanınıza mutlaka kalın bir dış giyim alın!",
         "warn_warm": "☀️ Hava ilerleyen saatlerde {t:.1f}°C'ye kadar ısınacak. Öğlen terlememeniz için kombin 'çıkarılabilir katmanlı (soğan taktiği)' olarak özel ayarlandı!",
         "warn_no_shorts": "👖 Şu an sıcak olsa da ilerleyen saatlerde havanın soğuyacağı/bozacağı öngörüldü. Bacaklarınızın üşümemesi için şort yerine uzun pantolon tercih edildi!",
-        "warn_fallback_outfit": "⚠️ Dolabınızda bu havaya tam uygun yalıtımda kıyafet bulunamadığı için, mevcut olan en iyi alternatifler önerildi."
+        "warn_fallback_outfit": "⚠️ Dolabınızda bu havaya tam uygun yalıtımda kıyafet bulunamadığı için, mevcut olan en iyi alternatifler önerildi.",
+        "start_lbl": "Kaç Saat Sonra Çıkacaksınız?",
+        "info_offset": "⏱️ Kombin {h} saat sonraki hava durumu ({t:.1f}°C) baz alınarak oluşturuldu."
     }
 }
 
@@ -211,7 +215,7 @@ def get_5_day_forecast(city, target_time_str, lang):
         return False, "API Error"
     except Exception as e: return False, str(e)
 
-def get_trip_forecast(city, duration_hours):
+def get_trip_forecast(city, start_offset_hours, duration_hours):
     url = f"http://api.openweathermap.org/data/2.5/forecast?q={city}&appid={API_KEY}&units=metric"
     try:
         response = requests.get(url)
@@ -219,17 +223,16 @@ def get_trip_forecast(city, duration_hours):
             data = response.json()
             tz = data["city"]["timezone"]
             now = datetime.datetime.utcnow() + datetime.timedelta(seconds=tz)
-            end_time = now + datetime.timedelta(hours=duration_hours)
+            start_time = now + datetime.timedelta(hours=start_offset_hours)
+            end_time = start_time + datetime.timedelta(hours=duration_hours)
             
             flcs = []
             precips = []
             
             for item in data["list"]:
-                dt = datetime.datetime.utcnow() + datetime.timedelta(seconds=tz) + datetime.timedelta(seconds=(item["dt"] - datetime.datetime.utcnow().timestamp()))
-                # Daha güvenli dt hesaplama:
                 dt = datetime.datetime.utcfromtimestamp(item["dt"]) + datetime.timedelta(seconds=tz)
                 if dt > end_time + datetime.timedelta(hours=3): break
-                if dt >= now - datetime.timedelta(hours=3):
+                if dt >= start_time - datetime.timedelta(hours=3):
                     flcs.append(item["main"]["feels_like"])
                     wm = item["weather"][0]["main"]
                     p_ml = "Rain" if wm in ["Rain", "Drizzle", "Thunderstorm"] else ("Snow" if wm == "Snow" else "Clear")
@@ -501,7 +504,9 @@ with tab1:
             m4.metric(t[lang]["wind"], f"{w_kmh:.1f} km/h")
             
             st.markdown("---")
-            duration = st.slider(t[lang]["dur_lbl"], min_value=1, max_value=12, value=1, step=1)
+            col_s, col_d = st.columns(2)
+            start_offset = col_s.slider(t[lang]["start_lbl"], min_value=0, max_value=24, value=0, step=1)
+            duration = col_d.slider(t[lang]["dur_lbl"], min_value=1, max_value=12, value=1, step=1)
             
             if st.button(t[lang]["btn_suggest"], type="primary", key="btn_now"):
                 with st.spinner(t[lang]["ai_calc"]):
@@ -509,26 +514,39 @@ with tab1:
                     trip_precip = p_ml
                     warnings = []
                     
-                    if duration > 2:
-                        ok_f, f_flcs, f_pre = get_trip_forecast(city, duration)
+                    if start_offset > 0 or duration > 2:
+                        ok_f, f_flcs, f_pre = get_trip_forecast(city, start_offset, duration)
                         if ok_f and f_flcs:
-                            all_temps = [flc] + f_flcs
-                            all_precips = [p_ml] + f_pre
+                            if start_offset == 0:
+                                all_temps = [flc] + f_flcs
+                                all_precips = [p_ml] + f_pre
+                            else:
+                                all_temps = f_flcs
+                                all_precips = f_pre
+                                
+                            base_flc = all_temps[0]
+                            base_precip = all_precips[0]
                             
+                            trip_flc = base_flc
+                            trip_precip = base_precip
+                            
+                            if start_offset > 0:
+                                st.info(t[lang]["info_offset"].format(h=start_offset, t=base_flc))
+                                
                             avg_flc = sum(all_temps) / len(all_temps)
                             min_flc = min(all_temps)
-                            
                             max_flc = max(all_temps)
+                            
                             layering_needed = False
                             ban_shorts = False
                             
-                            if (max_flc - flc) >= 4:
+                            if (max_flc - base_flc) >= 4:
                                 layering_needed = True
                                 warnings.append(t[lang]["warn_warm"].format(t=max_flc))
                                 
-                            if "Snow" in all_precips and p_ml != "Snow":
+                            if "Snow" in all_precips and base_precip != "Snow":
                                 warnings.append(t[lang]["warn_snow"])
-                            elif "Rain" in all_precips and p_ml != "Rain":
+                            elif "Rain" in all_precips and base_precip != "Rain":
                                 rain_item = None
                                 if not has_umbrella:
                                     for item in kiyafet_db["top_outer"]:
@@ -545,11 +563,11 @@ with tab1:
                                     
                             if (min_flc < 19) or ("Rain" in all_precips) or ("Snow" in all_precips):
                                 ban_shorts = True
-                                if flc >= 22:
+                                if base_flc >= 22:
                                     warnings.append(t[lang]["warn_no_shorts"])
                                     
-                            if (flc - min_flc) >= 3:
-                                extra_clo = (flc - min_flc) * 0.08
+                            if (base_flc - min_flc) >= 3:
+                                extra_clo = (base_flc - min_flc) * 0.08
                                 best_carry = None
                                 best_diff = 999
                                 for item in kiyafet_db["top_outer"]:
@@ -563,7 +581,6 @@ with tab1:
                                     warnings.append(t[lang]["warn_temp"].format(t=min_flc, carry=best_carry))
                                 else:
                                     warnings.append(t[lang]["warn_temp_fallback"].format(t=min_flc))
-                                # trip_flc bilerek değiştirilmiyor, böylece kombin ŞU AN'a göre yapılıyor
                                 
                     for w in warnings:
                         st.warning(w)
