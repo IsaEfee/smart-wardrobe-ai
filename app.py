@@ -612,12 +612,17 @@ with tab2:
                         st.caption(f"🕒 {day['time']} | {day['desc']}")
                         st.write(f"🌡️ {day['temp']:.1f}°C (His: {day['feels_like']:.1f}°C)")
                         
-                        ok2, out = generate_outfit(day['feels_like'], day['precip'], day['wind'], sel_t_ml, owned_tops, owned_bots, owned_accs, has_umbrella, has_undershirt)
+                        ban_s = day['feels_like'] < 19 or day['precip'] in ["Rain", "Snow"]
+                        
+                        ok2, out = generate_outfit(day['feels_like'], day['precip'], day['wind'], sel_t_ml, owned_tops, owned_bots, owned_accs, has_umbrella, has_undershirt, layering_needed=False, ban_shorts=ban_s)
                         st.markdown("---")
                         if ok2:
-                            tt, tb, bt1, bb1, bt2, bb2, at, ab, accs, used_under = out
+                            tt, tb, bt1, bb1, bt2, bb2, at, ab, accs, used_under, used_fallback = out
+                            
                             st.write("👕 " + render_top(bt1['ic'], bt1['dis'], used_under))
                             st.write("👖 " + render_bot(bb1['ic'], bb1['dis']))
                             if accs: st.write("🧣 *" + ", ".join(accs) + "*")
+                            if used_fallback:
+                                st.caption("*(Alternatif Parçalar)*")
                         else:
                             st.write("⚠️ " + t[lang]["err_outfit"])
