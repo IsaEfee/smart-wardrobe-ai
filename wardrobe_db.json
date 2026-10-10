@@ -345,7 +345,7 @@
                 "Female",
                 "Male"
             ],
-            "basic": false,
+            "basic": true,
             "hoodie": false,
             "style": [
                 "Casual",
