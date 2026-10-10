@@ -9,7 +9,7 @@
 An intelligent, machine-learning-powered web application that recommends the perfect daily outfit based on live weather data, scientific thermal insulation (CLO) values, your personal thermal profile, and a multi-tag fashion rule engine.
 
 ## 🚀 Live Demo
-*(Paste your Streamlit Cloud link here once deployed, e.g., https://smart-wardrobe-ai.streamlit.app)*
+👉 **[https://smart-wardrobe-ai-isa.streamlit.app/](https://smart-wardrobe-ai-isa.streamlit.app/)**
 
 ## 🧠 The Hybrid Architecture (How It Works)
 
@@ -41,7 +41,7 @@ If you want to run this project on your local machine:
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/smart-wardrobe-ai.git
+git clone https://github.com/IsaEfee/smart-wardrobe-ai.git
 cd smart-wardrobe-ai
 ```
 
