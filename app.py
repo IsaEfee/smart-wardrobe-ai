@@ -265,6 +265,10 @@ def generate_outfit(feels_like_c, precip_ml, wind_kmh, time_ml, owned_tops, owne
         tb = sum([h[1] for h in valid]) / len(valid)
     else:
         base = max(0.2, (22 - feels_like_c) * 0.10)
+        
+        # Rüzgar Çarpanı (Wind Penalty): Her 10 km/h rüzgar kumaş yalıtımını zayıflatır
+        base += (wind_kmh / 10) * 0.05
+        
         if time_ml == "Evening": base += 0.15
         elif time_ml == "Afternoon" and precip_ml == "Clear": base -= 0.10
         tt, tb = round(base*0.65, 1), round(base*0.35, 1)
@@ -317,6 +321,7 @@ def generate_outfit(feels_like_c, precip_ml, wind_kmh, time_ml, owned_tops, owne
             if feels_like_c < 20 and "Shorts" in dis["en"]: continue
             if dis["en"] == "Shorts" and ic["en"] != "None (Underwear Only)": continue
             if ban_shorts and "Shorts" in dis["en"]: continue
+            if feels_like_c < 25 and wind_kmh > 20 and "Shorts" in dis["en"]: continue
             
             if not is_style_compatible(ic["style"], dis["style"]): continue
             
