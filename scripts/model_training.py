@@ -8,7 +8,10 @@ import os
 
 def train_model():
     print("1. Loading Phase 2 dataset...")
-    file_path = os.path.join(os.path.dirname(__file__), "wardrobe_ai_dataset.csv")
+    base_dir = os.path.dirname(os.path.dirname(__file__))
+    file_path = os.path.join(base_dir, "data", "wardrobe_ai_dataset.csv")
+    if not os.path.exists(file_path):
+        file_path = os.path.join(os.path.dirname(__file__), "wardrobe_ai_dataset.csv")
     df = pd.read_csv(file_path)
 
     print("2. Encoding categorical variables (Including Time of Day)...")
@@ -42,7 +45,9 @@ def train_model():
     print(classification_report(y_test, y_pred, target_names=le_outcome.classes_))
 
     print("\n6. Saving Trained Model and Encoders...")
-    model_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "wardrobe_model.pkl")
+    models_dir = os.path.join(base_dir, "models")
+    os.makedirs(models_dir, exist_ok=True)
+    model_path = os.path.join(models_dir, "wardrobe_model.pkl")
     
     encoders = {
         'gender': le_gender,

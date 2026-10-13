@@ -126,7 +126,10 @@ t = {
 
 @st.cache_data
 def load_db():
-    with open(os.path.join(os.path.dirname(__file__), "wardrobe_db.json"), "r", encoding="utf-8") as f:
+    p = os.path.join(os.path.dirname(__file__), "data", "wardrobe_db.json")
+    if not os.path.exists(p):
+        p = os.path.join(os.path.dirname(__file__), "wardrobe_db.json")
+    with open(p, "r", encoding="utf-8") as f:
         return json.load(f)
 
 kiyafet_db = load_db()
@@ -168,7 +171,9 @@ else:
 
 @st.cache_resource
 def load_model_v2():
-    file_path = os.path.join(os.path.dirname(__file__), "wardrobe_model.pkl")
+    file_path = os.path.join(os.path.dirname(__file__), "models", "wardrobe_model.pkl")
+    if not os.path.exists(file_path):
+        file_path = os.path.join(os.path.dirname(__file__), "wardrobe_model.pkl")
     if not os.path.exists(file_path): return None, None
     data = joblib.load(file_path)
     return data['model'], data['encoders']

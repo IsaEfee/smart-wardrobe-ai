@@ -85,7 +85,10 @@ def generate_final_data(num_rows=5000):
     columns = ["Gender", "Profile", "Feels_Like_C", "Precipitation", "Wind_kmh", "Time_of_Day", "Top_CLO", "Bottom_CLO", "Outcome"]
     df = pd.DataFrame(data, columns=columns)
     
-    file_path = os.path.join(os.path.dirname(__file__), "wardrobe_ai_dataset.csv")
+    target_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
+    if not os.path.exists(target_dir):
+        target_dir = os.path.dirname(__file__)
+    file_path = os.path.join(target_dir, "wardrobe_ai_dataset.csv")
     df.to_csv(file_path, index=False)
     print(f"Dataset Phase 2 generated successfully: {file_path}")
 

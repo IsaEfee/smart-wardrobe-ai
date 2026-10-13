@@ -29,31 +29,47 @@ This project solves real-world recommender system challenges by combining a **Pr
 
 ## 🛠️ Tech Stack
 
-- **Frontend/UI**: Streamlit
-- **Machine Learning**: Scikit-Learn (Random Forest)
+- **Mobile & Web Backend**: FastAPI, Uvicorn, SQLite
+- **Web Demo / UI**: Streamlit
+- **Machine Learning**: Scikit-Learn (Random Forest, Pruned)
 - **Data Processing**: Pandas, NumPy
 - **External API**: OpenWeatherMap REST API (Live & 5-Day Forecast)
-- **Database**: Native JSON Document
+- **Database**: SQLite (User profiles, Persistent wardrobe & Feedback history), Native JSON (Clothing catalog)
 
-## 💻 Local Installation
+## 📁 Repository Structure
 
-If you want to run this project on your local machine:
-
-1. Clone the repository:
-```bash
-git clone https://github.com/IsaEfee/smart-wardrobe-ai.git
-cd smart-wardrobe-ai
+```text
+├── backend/
+│   ├── api.py               # FastAPI REST API endpoints
+│   ├── database.py          # SQLite User profiles & online feedback learning
+│   ├── engine.py            # Recommender core, thermodynamic rules & weather
+│   └── wardrobe_app.db      # Local SQLite database (auto-generated, git-ignored)
+├── data/
+│   ├── wardrobe_db.json     # Multi-tag Clothing Attributes & CLO values
+│   └── wardrobe_ai_dataset.csv # 50,000 biological training samples
+├── models/
+│   └── wardrobe_model.pkl   # Pre-trained pruned Random Forest model (< 22MB)
+├── scripts/
+│   ├── data_generator.py    # Synthetic dataset generator (50k biological records)
+│   └── model_training.py    # Random Forest training with max-depth pruning
+├── app.py                   # Streamlit live web interactive dashboard
+├── run_api.py               # One-click runner for FastAPI backend server
+├── requirements.txt         # Project Python dependencies
+└── README.md
 ```
 
-2. Install the required dependencies:
-```bash
-pip install -r requirements.txt
-```
+## 💻 Running the Project
 
-3. Run the Streamlit application:
+### 1. Run the Backend API (For Mobile App Integration)
+```bash
+python run_api.py
+```
+* Interactive Swagger Docs: `http://127.0.0.1:8000/docs`
+
+### 2. Run the Streamlit Web Showcase
 ```bash
 streamlit run app.py
 ```
 
 ## 📚 Academic Context
-This project demonstrates the integration of traditional Machine Learning algorithms with real-world deterministic rule engines. It successfully tackles the "cold start", "fashion mismatch", and "probabilistic hallucination" problems inherent in pure AI recommenders by applying strict architectural Separation of Concerns.
+This project demonstrates the integration of traditional Machine Learning algorithms with real-world deterministic rule engines and a **Human-in-the-Loop Adaptive Online Learning** loop. It successfully tackles the "cold start", "fashion mismatch", and "probabilistic hallucination" problems inherent in pure AI recommenders by applying strict architectural Separation of Concerns.
