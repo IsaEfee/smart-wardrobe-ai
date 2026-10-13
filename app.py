@@ -62,7 +62,10 @@ t = {
         "warn_no_shorts": "👖 Long pants selected instead of shorts to protect your legs from the cold/rain expected later!",
         "warn_fallback_outfit": "⚠️ No perfectly matching items found in your wardrobe for this weather. The closest alternatives were suggested.",
         "start_lbl": "How many hours until you leave?",
-        "info_offset": "⏱️ Outfit generated for {h} hours from now ({t:.1f}°C base temp)."
+        "info_offset": "⏱️ Outfit generated for {h} hours from now ({t:.1f}°C base temp).",
+        "warn_rain_temp_umbrella": "⚠️ Later today, temperature will drop to {t:.1f}°C and rain is expected! We styled you for now, but recommend taking your **{carry_rain}** and **{carry_temp}**!",
+        "warn_rain_temp_combo": "⚠️ Later today, temperature will drop to {t:.1f}°C and rain is expected! To stay protected from both cold and rain with a single piece, carry your **{carry}**!",
+        "warn_rain_temp_fallback": "⚠️ Later today, temperature will drop to {t:.1f}°C and rain is expected! You can take **{carry}** for the cold, but we strongly recommend carrying an umbrella as well."
     },
     "tr": {
         "welcome": "👋 Akıllı Kıyafet Asistanına Hoş Geldiniz!",
@@ -114,7 +117,10 @@ t = {
         "warn_no_shorts": "👖 Şu an sıcak olsa da ilerleyen saatlerde havanın soğuyacağı/bozacağı öngörüldü. Bacaklarınızın üşümemesi için şort yerine uzun pantolon tercih edildi!",
         "warn_fallback_outfit": "⚠️ Dolabınızda bu havaya tam uygun yalıtımda kıyafet bulunamadığı için, mevcut olan en iyi alternatifler önerildi.",
         "start_lbl": "Kaç Saat Sonra Çıkacaksınız?",
-        "info_offset": "⏱️ Kombin {h} saat sonraki hava durumu ({t:.1f}°C) baz alınarak oluşturuldu."
+        "info_offset": "⏱️ Kombin {h} saat sonraki hava durumu ({t:.1f}°C) baz alınarak oluşturuldu.",
+        "warn_rain_temp_umbrella": "⚠️ İlerleyen saatlerde hava {t:.1f}°C'ye soğuyacak ve yağmur bekleniyor! Kombininiz şimdiki havaya göre yapıldı; yanınıza **{carry_rain}** ve **{carry_temp}** almanızı öneririz!",
+        "warn_rain_temp_combo": "⚠️ İlerleyen saatlerde hava {t:.1f}°C'ye soğuyacak ve yağmur başlayacak! Hem soğuktan hem yağmurdan tek parça ile korunmak için yanınıza **{carry}** almanız yeterli olacaktır.",
+        "warn_rain_temp_fallback": "⚠️ İlerleyen saatlerde hava {t:.1f}°C'ye soğuyacak ve yağmur bekleniyor. Soğuk için yanınıza **{carry}** alabilirsiniz; ancak dolabınızda yağmura uygun bir dış giyim bulunmadığı için yanınıza mutlaka bir şemsiye edinmenizi öneririz."
     }
 }
 
@@ -549,13 +555,59 @@ with tab1:
                                 layering_needed = True
                                 warnings.append(t[lang]["warn_warm"].format(t=max_flc))
                                 
-                            if "Snow" in all_precips and base_precip != "Snow":
+                            is_snow = "Snow" in all_precips and base_precip != "Snow"
+                            is_rain = "Rain" in all_precips and base_precip != "Rain"
+                            is_temp_drop = (base_flc - min_flc) >= 3
+                            
+                            if (min_flc < 19) or ("Rain" in all_precips) or ("Snow" in all_precips):
+                                ban_shorts = True
+                                if base_flc >= 22:
+                                    warnings.append(t[lang]["warn_no_shorts"])
+                                    
+                            best_carry = None
+                            if is_temp_drop:
+                                extra_clo = (base_flc - min_flc) * 0.08
+                                best_diff = 999
+                                for item in kiyafet_db["top_outer"]:
+                                    if fmt(item, lang) in owned_tops and item["en"] != "None (Innerwear Only)":
+                                        diff = abs(item["clo"] - extra_clo)
+                                        if diff < best_diff:
+                                            best_diff = diff
+                                            best_carry = fmt(item, lang)
+                                            
+                            if is_snow:
                                 warnings.append(t[lang]["warn_snow"])
-                            elif "Rain" in all_precips and base_precip != "Rain":
+                                
+                            if is_rain and is_temp_drop:
+                                if has_umbrella:
+                                    umb_str = "☂️ Şemsiye" if lang == "tr" else "☂️ Umbrella"
+                                    if best_carry:
+                                        warnings.append(t[lang]["warn_rain_temp_umbrella"].format(t=min_flc, carry_rain=umb_str, carry_temp=best_carry))
+                                    else:
+                                        warnings.append(t[lang]["warn_rain"].format(carry=umb_str))
+                                        warnings.append(t[lang]["warn_temp_fallback"].format(t=min_flc))
+                                else:
+                                    combo_carry = None
+                                    combo_diff = 999
+                                    for item in kiyafet_db["top_outer"]:
+                                        if fmt(item, lang) in owned_tops and item["en"] != "None (Innerwear Only)" and item.get("hoodie", False):
+                                            diff = abs(item["clo"] - extra_clo)
+                                            if diff < combo_diff:
+                                                combo_diff = diff
+                                                combo_carry = fmt(item, lang)
+                                                
+                                    if combo_carry:
+                                        warnings.append(t[lang]["warn_rain_temp_combo"].format(t=min_flc, carry=combo_carry))
+                                    elif best_carry:
+                                        warnings.append(t[lang]["warn_rain_temp_fallback"].format(t=min_flc, carry=best_carry))
+                                    else:
+                                        warnings.append(t[lang]["warn_rain_fallback"])
+                                        warnings.append(t[lang]["warn_temp_fallback"].format(t=min_flc))
+                            elif is_rain:
                                 rain_item = None
                                 if not has_umbrella:
                                     for item in kiyafet_db["top_outer"]:
-                                        if fmt(item, lang) in owned_tops and item["hoodie"]:
+                                        if fmt(item, lang) in owned_tops and item.get("hoodie", False):
                                             rain_item = fmt(item, lang)
                                             break
                                 if has_umbrella:
@@ -565,23 +617,7 @@ with tab1:
                                     warnings.append(t[lang]["warn_rain"].format(carry=rain_item))
                                 else:
                                     warnings.append(t[lang]["warn_rain_fallback"])
-                                    
-                            if (min_flc < 19) or ("Rain" in all_precips) or ("Snow" in all_precips):
-                                ban_shorts = True
-                                if base_flc >= 22:
-                                    warnings.append(t[lang]["warn_no_shorts"])
-                                    
-                            if (base_flc - min_flc) >= 3:
-                                extra_clo = (base_flc - min_flc) * 0.08
-                                best_carry = None
-                                best_diff = 999
-                                for item in kiyafet_db["top_outer"]:
-                                    if fmt(item, lang) in owned_tops and item["en"] != "None (Innerwear Only)":
-                                        diff = abs(item["clo"] - extra_clo)
-                                        if diff < best_diff:
-                                            best_diff = diff
-                                            best_carry = fmt(item, lang)
-                                            
+                            elif is_temp_drop:
                                 if best_carry:
                                     warnings.append(t[lang]["warn_temp"].format(t=min_flc, carry=best_carry))
                                 else:
